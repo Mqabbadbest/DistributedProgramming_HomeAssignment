@@ -1,0 +1,4 @@
+node_modules/
+package-lock.json
+dist_service_account.json
+.env
