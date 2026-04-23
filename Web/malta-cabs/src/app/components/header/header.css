@@ -1,0 +1,50 @@
+.header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 0 2rem;
+  background: rgba(10, 10, 10, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(197, 160, 80, 0.15);
+}
+.header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  color: #fff;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.logo-icon { color: #c5a050; font-size: 0.8rem; }
+.logo em { color: #c5a050; font-style: normal; }
+.nav { display: flex; gap: 0.75rem; align-items: center; }
+.btn {
+  padding: 0.5rem 1.4rem;
+  border-radius: 2px;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.btn-ghost {
+  color: #c5a050;
+  border: 1px solid rgba(197, 160, 80, 0.4);
+  background: transparent;
+}
+.btn-ghost:hover { background: rgba(197, 160, 80, 0.08); border-color: #c5a050; }
+.btn-gold { background: #c5a050; color: #0a0a0a; border: 1px solid #c5a050; }
+.btn-gold:hover { background: #d4b060; }
