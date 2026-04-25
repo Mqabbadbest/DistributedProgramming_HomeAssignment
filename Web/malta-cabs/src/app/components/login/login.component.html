@@ -3,21 +3,40 @@
   <div class="auth-card">
     <div class="auth-brand">
       <span class="brand-icon">◆</span>
-      <span class="brand-name">MALTA <em>CABS</em></span>
+      <span class="brand-name">ITALY <em>CABS</em></span>
     </div>
     <h2 class="auth-title">Welcome back</h2>
     <p class="auth-sub">Sign in to your account</p>
-    <form (ngSubmit)="onSubmit()" class="auth-form">
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
       <div class="field">
         <label>Email</label>
-        <input type="email" [(ngModel)]="email" name="email" placeholder="you@example.com" required />
+        <input type="email" formControlName="email" placeholder="you@example.com" />
+        @if (shouldProcessControlValidationMessages('email')) {
+          <span class="error">Please enter a valid email address</span>
+        }
       </div>
+
       <div class="field">
         <label>Password</label>
-        <input type="password" [(ngModel)]="password" name="password" placeholder="••••••••" required />
+        <div class="input-wrap">
+          <input
+            [type]="isPasswordVisible ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="••••••••"
+          />
+          <button type="button" class="toggle-pw" (click)="togglePasswordVisibility()">
+            {{ isPasswordVisible ? '🙈' : '👁️' }}
+          </button>
+        </div>
+        @if (shouldProcessControlValidationMessages('password')) {
+          <span class="error">Password is required</span>
+        }
       </div>
-      <button type="submit" class="submit-btn">Sign In</button>
+
+      <button type="submit" class="submit-btn" [disabled]="loginForm.invalid">Sign In</button>
     </form>
+
     <p class="auth-switch">Don't have an account? <a routerLink="/register">Register</a></p>
   </div>
 </main>

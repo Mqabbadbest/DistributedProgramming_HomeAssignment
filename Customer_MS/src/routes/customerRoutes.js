@@ -28,9 +28,9 @@ router.post("/register", async (req, res) => {
     if (!emailRegex.test(email))
       return res.status(400).json({ error: "Invalid email address" });
 
-    const phoneRegex = /^(\+00356|\+356)?\s?\d{8}$/;
+    const phoneRegex = /^(\+39|0039)?\s?\d{9,11}$/;
     if (!phoneRegex.test(phone))
-      return res.status(400).json({ error: "Invalid phone number" });
+      return res.status(400).json({ error: "Invalid Italian phone number" });
 
     const customer = await customerRepository.register({
       firstName,

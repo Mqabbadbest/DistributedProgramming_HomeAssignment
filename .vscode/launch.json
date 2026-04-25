@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Start All Services",
+      "request": "launch",
+      "type": "node",
+      "preLaunchTask": "Start All",
+      "program": "${workspaceFolder}/api-gateway/server.js",
+      "runtimeExecutable": "node",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    }
+  ]
+}
