@@ -69,6 +69,21 @@ router.post("/login", async (req, res) => {
   }
 });
 
+router.get("/me", async (req, res) => {
+  try {
+    const token = req.headers["x-session-token"];
+    if (!token) return res.status(401).json({ error: "Missing session token" });
+    const customer = await customerRepository.findByToken(token);
+    if (!customer)
+      return res.status(401).json({ error: "Invalid or expired token" });
+
+    const { passwordHash: _, ...safe } = customer;
+    res.status(200).json(safe);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /customers/:id
 router.get("/:id", requireAuth, async (req, res) => {
   try {

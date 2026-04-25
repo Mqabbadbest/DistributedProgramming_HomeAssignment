@@ -1,0 +1,152 @@
+<app-header />
+<main class="booking-page">
+  <div class="booking-card">
+    <div class="auth-brand">
+      <span class="brand-icon">◆</span>
+      <span class="brand-name">ITALY <em>CABS</em></span>
+    </div>
+    <h2 class="page-title">Book a Ride</h2>
+    <p class="page-sub">Fill in your trip details below</p>
+
+    <form [formGroup]="bookingForm" (ngSubmit)="onSubmit()" class="booking-form">
+      <!-- Pickup -->
+      <div class="field">
+        <label>Pickup Location</label>
+        <div class="input-wrap">
+          <input
+            type="text"
+            [value]="originQuery"
+            (input)="originQuery = $any($event.target).value; searchLocation(originQuery, 'origin')"
+            placeholder="Search pickup location..."
+          />
+          <button type="button" class="locate-btn" (click)="useMyLocation()">◎</button>
+        </div>
+        @if (originResults.length > 0) {
+          <ul class="dropdown">
+            @for (result of originResults; track result.display_name) {
+              <li (click)="selectOrigin(result)">{{ result.display_name }}</li>
+            }
+          </ul>
+        }
+        @if (!originSelected) {
+          <span class="error">Please select a pickup location</span>
+        }
+      </div>
+
+      <!-- Destination -->
+      <div class="field">
+        <label>Destination</label>
+        <div class="input-wrap">
+          <input
+            type="text"
+            [value]="destinationQuery"
+            (input)="
+              destinationQuery = $any($event.target).value;
+              searchLocation(destinationQuery, 'destination')
+            "
+            placeholder="Search destination..."
+          />
+        </div>
+        @if (destinationResults.length > 0) {
+          <ul class="dropdown">
+            @for (result of destinationResults; track result.display_name) {
+              <li (click)="selectDestination(result)">{{ result.display_name }}</li>
+            }
+          </ul>
+        }
+        @if (!destinationSelected) {
+          <span class="error">Please select a destination</span>
+        }
+      </div>
+
+      <!-- Date & Time -->
+      <div class="field">
+        <label>Date & Time</label>
+        <input type="datetime-local" formControlName="dateTime" />
+        @if (shouldProcessControlValidationMessages('dateTime')) {
+          <span class="error">Date and time are required</span>
+        }
+      </div>
+
+      <!-- Passengers -->
+      <div class="field">
+        <label>Number of Passengers</label>
+        <input type="number" formControlName="passengers" min="1" max="8" />
+        @if (shouldProcessControlValidationMessages('passengers')) {
+          <span class="error">Passengers must be between 1 and 8</span>
+        }
+      </div>
+
+      <!-- Cab Type -->
+      <div class="field">
+        <label>Cab Type</label>
+        <div class="cab-types">
+          @for (type of cabTypes; track type) {
+            <div
+              class="cab-option"
+              [class.selected]="bookingForm.value.cabType === type"
+              (click)="bookingForm.patchValue({ cabType: type })"
+            >
+              @if (type === 'Economic') {
+                <span class="cab-icon">◈</span>
+              }
+              @if (type === 'Premium') {
+                <span class="cab-icon">◆</span>
+              }
+              @if (type === 'Executive') {
+                <span class="cab-icon">✦</span>
+              }
+              {{ type }}
+            </div>
+          }
+        </div>
+        @if (shouldProcessControlValidationMessages('cabType')) {
+          <span class="error">Please select a cab type</span>
+        }
+      </div>
+
+      <!-- Price Calculation Section -->
+      <div class="price-section">
+        @if (isCalculatingPrice) {
+          <div class="price-calculating">
+            <div class="spinner"></div>
+            <p>Calculating price...</p>
+          </div>
+        }
+        @if (!isCalculatingPrice && calculatedPrice !== null) {
+          <div class="price-display">
+            <div class="price-header">
+              <span class="price-label">Estimated Fare</span>
+              <span class="price-amount">€{{ calculatedPrice.toFixed(2) }}</span>
+            </div>
+            @if (tripDetails) {
+              <div class="trip-details">
+                <div class="detail-item">
+                  <span class="detail-label">Distance</span>
+                  <span class="detail-value"
+                    >{{ tripDetails.distanceKilometers?.toFixed(1) }} km</span
+                  >
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Duration</span>
+                  <span class="detail-value"
+                    >{{ tripDetails.durationMinutes?.toFixed(0) }} min</span
+                  >
+                </div>
+              </div>
+            }
+          </div>
+        }
+        @if (priceCalculationError) {
+          <div class="price-error">
+            <span>⚠️ {{ priceCalculationError }}</span>
+          </div>
+        }
+      </div>
+
+      <button type="submit" class="submit-btn" [disabled]="bookingForm.invalid || !calculatedPrice">
+        Confirm Booking
+      </button>
+    </form>
+  </div>
+</main>
