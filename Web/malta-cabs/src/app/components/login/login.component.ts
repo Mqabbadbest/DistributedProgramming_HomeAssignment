@@ -1,14 +1,14 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { HeaderComponent } from '../../components/header/header';
+import { HeaderComponent } from '../header/header.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [FormsModule, RouterLink, HeaderComponent],
-  templateUrl: './login.html',
-  styleUrl: './login.css'
+  templateUrl: './login.component.html',
+  styleUrl: './login.component.css',
 })
 export class LoginComponent {
   email = '';

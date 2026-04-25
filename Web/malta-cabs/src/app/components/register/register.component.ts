@@ -1,14 +1,14 @@
 import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { HeaderComponent } from '../../components/header/header';
+import { HeaderComponent } from '../header/header.component';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [FormsModule, RouterLink, HeaderComponent],
-  templateUrl: './register.html',
-  styleUrl: './register.css'
+  imports: [ReactiveFormsModule, FormsModule, RouterLink, HeaderComponent],
+  templateUrl: './register.component.html',
+  styleUrl: './register.component.css',
 })
 export class RegisterComponent {
   firstName = '';

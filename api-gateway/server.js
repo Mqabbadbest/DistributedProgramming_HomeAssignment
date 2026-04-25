@@ -48,6 +48,11 @@ app.get("/customers/:id", async (req, res) => {
   try {
     const response = await axios.get(
       `${CUSTOMER_SERVICE}/customers/${req.params.id}`,
+      {
+        headers: {
+          "x-session-token": req.headers["x-session-token"],
+        },
+      },
     );
     res.status(response.status).json(response.data);
   } catch (err) {
