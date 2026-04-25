@@ -1,8 +1,9 @@
 // src/repositories/CustomerRepository.js
+require("dotenv").config();
 const db = require("../../db");
 const Customer = require("../models/Customer");
 const bcrypt = require("bcrypt");
-require("dotenv").config();
+const { v4: uuidv4 } = require("uuid");
 
 const COLLECTION = "customers";
 
@@ -53,8 +54,14 @@ class CustomerRepository {
       throw new Error("Invalid credentials");
     }
 
+    const token = uuidv4();
+    await db.collection("sessions").doc(token).set({
+      customerId: customer.id,
+      createdAt: new Date(),
+    });
+
     console.log("Login successful for email:", email);
-    return customer;
+    return { customer, token };
   }
 
   async findById(id) {
@@ -67,6 +74,13 @@ class CustomerRepository {
       console.error("Error finding customer by ID:", error);
       throw new Error("Failed to find customer");
     }
+  }
+
+  async findByToken(token) {
+    const doc = await db.collection("sessions").doc(token).get();
+    if (!doc.exists) return null;
+    const { customerId } = doc.data();
+    return this.findById(customerId);
   }
 
   async findByEmail(email) {

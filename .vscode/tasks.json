@@ -1,0 +1,76 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start Customer MS",
+      "type": "shell",
+      "command": "node server.js",
+      "options": {
+        "cwd": "${workspaceFolder}/Customer_MS"
+      },
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "label": "Customer MS"
+      },
+      "problemMatcher": {
+        "pattern": { "regexp": "." },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "running on port"
+        }
+      }
+    },
+    {
+      "label": "Start API Gateway",
+      "type": "shell",
+      "command": "node server.js",
+      "options": {
+        "cwd": "${workspaceFolder}/api-gateway"
+      },
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "label": "API Gateway"
+      },
+      "problemMatcher": {
+        "pattern": { "regexp": "." },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "running on port"
+        }
+      }
+    },
+    {
+      "label": "Start Angular",
+      "type": "shell",
+      "command": "ng serve",
+      "options": {
+        "cwd": "${workspaceFolder}/Web/malta-cabs"
+      },
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "label": "Angular"
+      },
+      "problemMatcher": {
+        "pattern": { "regexp": "." },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "Local:"
+        }
+      }
+    },
+    {
+      "label": "Start All",
+      "dependsOn": ["Start Customer MS", "Start API Gateway", "Start Angular"],
+      "dependsOrder": "parallel"
+    }
+  ]
+}
