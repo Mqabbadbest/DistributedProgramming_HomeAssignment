@@ -20,4 +20,8 @@ export class BookingService {
   getPastBookings(): Observable<any[]> {
     return this.http.get<any[]>(`${this.base}/past`);
   }
+
+  getBookingById(bookingId: string): Observable<any> {
+    return this.http.get(`${this.base}/${bookingId}`);
+  }
 }

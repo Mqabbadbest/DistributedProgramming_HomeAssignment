@@ -11,6 +11,10 @@ const CUSTOMER_SERVICE =
   process.env.CUSTOMER_SERVICE_URL || "http://localhost:3000";
 const BOOKING_SERVICE =
   process.env.BOOKING_SERVICE_URL || "http://localhost:3001";
+const PAYMENT_SERVICE =
+  process.env.PAYMENT_SERVICE_URL || "http://localhost:3002";
+const LOCATION_SERVICE =
+  process.env.LOCATION_SERVICE_URL || "http://localhost:3003";
 
 // Health check
 app.get("/health", (req, res) =>
@@ -132,9 +136,6 @@ app.get("/bookings/:id", async (req, res) => {
   }
 });
 
-const PAYMENT_SERVICE =
-  process.env.PAYMENT_SERVICE_URL || "http://localhost:3002";
-
 // ─── Payments ─────────────────────────────────────────────────────────────
 // POST /payments/calculate — calculate price (frontend only)
 app.post("/payments/calculate", async (req, res) => {
@@ -203,6 +204,85 @@ app.get("/payments", async (req, res) => {
     res
       .status(err.response?.status || 502)
       .json(err.response?.data || { error: "Payment service unavailable" });
+  }
+});
+
+app.post("/locations", async (req, res) => {
+  try {
+    const response = await axios.post(
+      `${LOCATION_SERVICE}/locations`,
+      req.body,
+      {
+        headers: { "x-session-token": req.headers["x-session-token"] },
+      },
+    );
+    res.status(response.status).json(response.data);
+  } catch (err) {
+    res
+      .status(err.response?.status || 502)
+      .json(err.response?.data || { error: "Location service unavailable" });
+  }
+});
+
+app.get("/locations", async (req, res) => {
+  try {
+    const response = await axios.get(`${LOCATION_SERVICE}/locations`, {
+      headers: { "x-session-token": req.headers["x-session-token"] },
+    });
+    res.status(response.status).json(response.data);
+  } catch (err) {
+    res
+      .status(err.response?.status || 502)
+      .json(err.response?.data || { error: "Location service unavailable" });
+  }
+});
+
+app.put("/locations/:id", async (req, res) => {
+  try {
+    const response = await axios.put(
+      `${LOCATION_SERVICE}/locations/${req.params.id}`,
+      req.body,
+      {
+        headers: { "x-session-token": req.headers["x-session-token"] },
+      },
+    );
+    res.status(response.status).json(response.data);
+  } catch (err) {
+    res
+      .status(err.response?.status || 502)
+      .json(err.response?.data || { error: "Location service unavailable" });
+  }
+});
+
+app.delete("/locations/:id", async (req, res) => {
+  try {
+    const response = await axios.delete(
+      `${LOCATION_SERVICE}/locations/${req.params.id}`,
+      {
+        headers: { "x-session-token": req.headers["x-session-token"] },
+      },
+    );
+    res.status(response.status).json(response.data);
+  } catch (err) {
+    res
+      .status(err.response?.status || 502)
+      .json(err.response?.data || { error: "Location service unavailable" });
+  }
+});
+
+app.get("/locations/:id/weather", async (req, res) => {
+  try {
+    const response = await axios.get(
+      `${LOCATION_SERVICE}/locations/${req.params.id}/weather`,
+      {
+        headers: { "x-session-token": req.headers["x-session-token"] },
+      },
+    );
+    res.status(response.status).json(response.data);
+  } catch (err) {
+    res
+      .status(err.response?.status || 502)
+      .json(err.response?.data || { error: "Location service unavailable" });
   }
 });
 

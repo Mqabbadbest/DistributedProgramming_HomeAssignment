@@ -15,7 +15,9 @@
         "label": "Customer MS"
       },
       "problemMatcher": {
-        "pattern": { "regexp": "." },
+        "pattern": {
+          "regexp": "."
+        },
         "background": {
           "activeOnStart": true,
           "beginsPattern": ".",
@@ -37,7 +39,9 @@
         "label": "API Gateway"
       },
       "problemMatcher": {
-        "pattern": { "regexp": "." },
+        "pattern": {
+          "regexp": "."
+        },
         "background": {
           "activeOnStart": true,
           "beginsPattern": ".",
@@ -59,7 +63,9 @@
         "label": "Booking MS"
       },
       "problemMatcher": {
-        "pattern": { "regexp": "." },
+        "pattern": {
+          "regexp": "."
+        },
         "background": {
           "activeOnStart": true,
           "beginsPattern": ".",
@@ -81,7 +87,33 @@
         "label": "Payment MS"
       },
       "problemMatcher": {
-        "pattern": { "regexp": "." },
+        "pattern": {
+          "regexp": "."
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "running on port"
+        }
+      }
+    },
+    {
+      "label": "Start Location MS",
+      "type": "shell",
+      "command": "node server.js",
+      "options": {
+        "cwd": "${workspaceFolder}/Location_MS"
+      },
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "label": "Location MS"
+      },
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "."
+        },
         "background": {
           "activeOnStart": true,
           "beginsPattern": ".",
@@ -103,7 +135,9 @@
         "label": "Angular"
       },
       "problemMatcher": {
-        "pattern": { "regexp": "." },
+        "pattern": {
+          "regexp": "."
+        },
         "background": {
           "activeOnStart": true,
           "beginsPattern": ".",
@@ -117,6 +151,7 @@
         "Start Customer MS",
         "Start Booking MS",
         "Start Payment MS",
+        "Start Location MS",
         "Start API Gateway",
         "Start Angular"
       ],

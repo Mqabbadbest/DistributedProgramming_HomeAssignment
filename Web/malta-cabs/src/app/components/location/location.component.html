@@ -1,0 +1,166 @@
+<app-header />
+<main class="locations-page">
+  <div class="locations-inner">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Saved Locations</h1>
+        <p class="page-sub">Your favourite pickup spots</p>
+      </div>
+    </div>
+
+    @if (isLoading) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading locations...</p>
+      </div>
+    }
+
+    @if (!isLoading && locations.length === 0) {
+      <div class="empty-state">
+        <p class="empty-icon">◎</p>
+        <p class="empty-title">No saved locations</p>
+        <p class="empty-sub">Save a pickup location from a booking to see it here</p>
+      </div>
+    }
+
+    @if (!isLoading && locations.length > 0) {
+      <div class="locations-grid">
+        @for (location of locations; track location.id) {
+          <div class="location-card">
+            <div class="location-header">
+              <div class="location-icon">◎</div>
+              <h3 class="location-name">{{ location.name }}</h3>
+            </div>
+            <div class="location-coords">
+              <span>{{ location.lat.toFixed(5) }}°N</span>
+              <span>{{ location.lng.toFixed(5) }}°E</span>
+            </div>
+            <p class="location-date">Saved {{ location.createdAt | date: 'dd MMM yyyy' }}</p>
+            <div class="location-actions">
+              <button class="action-btn action-weather" (click)="openWeather(location)">
+                ☁ Weather Forecast
+              </button>
+              <button class="action-btn action-edit" (click)="openEdit(location)">✎ Edit</button>
+              <button class="action-btn action-delete" (click)="deleteLocation(location)">✕</button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</main>
+
+<!-- Edit Modal -->
+@if (editingLocation) {
+  <div class="modal-overlay" (click)="closeEdit()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3 class="modal-title">Edit Location</h3>
+      <form [formGroup]="editForm" (ngSubmit)="saveEdit()" class="edit-form">
+        <div class="field">
+          <label>Name</label>
+          <input type="text" formControlName="name" placeholder="e.g. Home" />
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Latitude</label>
+            <input type="number" formControlName="lat" step="0.00001" />
+          </div>
+          <div class="field">
+            <label>Longitude</label>
+            <input type="number" formControlName="lng" step="0.00001" />
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="closeEdit()">Cancel</button>
+          <button type="submit" class="btn-save" [disabled]="editForm.invalid">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Weather Modal -->
+@if (weatherLocation) {
+  <div class="modal-overlay" (click)="closeWeather()">
+    <div class="modal weather-modal" (click)="$event.stopPropagation()">
+      <div class="weather-modal-header">
+        <div>
+          <h3 class="modal-title">Weather Forecast</h3>
+          <p class="modal-sub">{{ weatherLocation.name }}</p>
+        </div>
+        <button class="close-btn" (click)="closeWeather()">✕</button>
+      </div>
+
+      @if (isLoadingWeather) {
+        <div class="loading-state" style="padding: 3rem 0">
+          <div class="spinner"></div>
+          <p>Fetching forecast...</p>
+        </div>
+      }
+
+      @if (!isLoadingWeather && weatherData) {
+        <div class="carousel">
+          <button class="carousel-btn" (click)="prevDay()" [disabled]="weatherCarouselIndex === 0">
+            ‹
+          </button>
+
+          <div class="weather-card">
+            @let day = getWeatherDays()[weatherCarouselIndex];
+            <p class="weather-date">{{ day.date | date: 'EEEE, dd MMM' }}</p>
+            <div class="weather-temp">
+              <span class="temp-min">{{ day.tempMin }}°C</span>
+              <span class="temp-divider">/</span>
+              <span class="temp-max">{{ day.tempMax }}°C</span>
+            </div>
+            <div class="weather-details">
+              <div class="weather-item">
+                <span class="weather-icon">🌅</span>
+                <span class="weather-label">Sunrise</span>
+                <span class="weather-value">{{ day.sunrise | date: 'HH:mm' }}</span>
+              </div>
+              <div class="weather-item">
+                <span class="weather-icon">🌇</span>
+                <span class="weather-label">Sunset</span>
+                <span class="weather-value">{{ day.sunset | date: 'HH:mm' }}</span>
+              </div>
+              <div class="weather-item">
+                <span class="weather-icon">💨</span>
+                <span class="weather-label">Wind</span>
+                <span class="weather-value">{{ day.windSpeed }} km/h</span>
+              </div>
+              <div class="weather-item">
+                <span class="weather-icon">🌬</span>
+                <span class="weather-label">Gusts</span>
+                <span class="weather-value">{{ day.windGusts }} km/h</span>
+              </div>
+              <div class="weather-item">
+                <span class="weather-icon">🌧</span>
+                <span class="weather-label">Rain chance</span>
+                <span class="weather-value">{{ day.precipitation }}%</span>
+              </div>
+            </div>
+          </div>
+
+          <button
+            class="carousel-btn"
+            (click)="nextDay()"
+            [disabled]="weatherCarouselIndex === getWeatherDays().length - 1"
+          >
+            ›
+          </button>
+        </div>
+
+        <!-- Dots indicator -->
+        <div class="carousel-dots">
+          @for (day of getWeatherDays(); track $index) {
+            <span
+              class="dot"
+              [class.active]="$index === weatherCarouselIndex"
+              (click)="weatherCarouselIndex = $index"
+            ></span>
+          }
+        </div>
+      }
+    </div>
+  </div>
+}

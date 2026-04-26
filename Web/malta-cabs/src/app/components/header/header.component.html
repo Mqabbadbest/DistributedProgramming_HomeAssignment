@@ -2,13 +2,17 @@
   <div class="header-inner">
     <a routerLink="/" class="logo">
       <span class="logo-icon">◆</span>
-      <span class="logo-text">ITALY <em>CABS</em></span>
+      <span class="logo-text">MALTA <em>CABS</em></span>
     </a>
+
     <nav class="nav">
       @if (!isAuthenticated) {
         <a routerLink="/login" class="btn btn-ghost">Login</a>
         <a routerLink="/register" class="btn btn-gold">Register</a>
       } @else {
+        <a routerLink="/dashboard" routerLinkActive="active" class="nav-tab">Bookings</a>
+        <a routerLink="/locations" routerLinkActive="active" class="nav-tab">Locations</a>
+
         <div class="profile-menu">
           <button class="profile-btn" (click)="toggleDropdown()" title="Profile">
             <svg
