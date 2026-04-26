@@ -1,18 +1,11 @@
 const crypto = require("crypto");
 
-const ENCRYPTION_KEY = process.env.CARD_ENCRYPTION_KEY; // must be 32 chars
+const ENCRYPTION_KEY = Buffer.from(process.env.CARD_ENCRYPTION_KEY, "base64");
 const IV_LENGTH = 16;
 
-/**
- * Encrypts sensitive card data and returns a token (the encrypted string).
- */
 const tokenizeCard = (cardData) => {
   const iv = crypto.randomBytes(IV_LENGTH);
-  const cipher = crypto.createCipheriv(
-    "aes-256-cbc",
-    Buffer.from(ENCRYPTION_KEY),
-    iv,
-  );
+  const cipher = crypto.createCipheriv("aes-256-cbc", ENCRYPTION_KEY, iv); // use directly, no Buffer.from
   const encrypted = Buffer.concat([
     cipher.update(JSON.stringify(cardData)),
     cipher.final(),
@@ -20,18 +13,11 @@ const tokenizeCard = (cardData) => {
   return iv.toString("hex") + ":" + encrypted.toString("hex");
 };
 
-/**
- * Decrypts a token back into card data.
- */
 const detokenizeCard = (token) => {
   const [ivHex, encryptedHex] = token.split(":");
   const iv = Buffer.from(ivHex, "hex");
   const encrypted = Buffer.from(encryptedHex, "hex");
-  const decipher = crypto.createDecipheriv(
-    "aes-256-cbc",
-    Buffer.from(ENCRYPTION_KEY),
-    iv,
-  );
+  const decipher = crypto.createDecipheriv("aes-256-cbc", ENCRYPTION_KEY, iv); // use directly
   const decrypted = Buffer.concat([
     decipher.update(encrypted),
     decipher.final(),

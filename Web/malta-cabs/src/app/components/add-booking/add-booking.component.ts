@@ -332,7 +332,7 @@ export class AddBookingComponent implements OnInit, OnDestroy {
         });
         setTimeout(() => {
           console.log('[AddBooking] Redirecting to dashboard');
-          this.router.navigate(['/']);
+          this.router.navigate(['/payment', response.paymentId]);
         }, 2000);
       },
       error: (err) => {
