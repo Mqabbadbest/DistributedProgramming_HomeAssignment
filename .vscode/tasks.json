@@ -46,6 +46,50 @@
       }
     },
     {
+      "label": "Start Booking MS",
+      "type": "shell",
+      "command": "node server.js",
+      "options": {
+        "cwd": "${workspaceFolder}/Booking_MS"
+      },
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "label": "Booking MS"
+      },
+      "problemMatcher": {
+        "pattern": { "regexp": "." },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "running on port"
+        }
+      }
+    },
+    {
+      "label": "Start Payment MS",
+      "type": "shell",
+      "command": "node server.js",
+      "options": {
+        "cwd": "${workspaceFolder}/Payment_MS"
+      },
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "label": "Payment MS"
+      },
+      "problemMatcher": {
+        "pattern": { "regexp": "." },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "running on port"
+        }
+      }
+    },
+    {
       "label": "Start Angular",
       "type": "shell",
       "command": "ng serve",
@@ -69,8 +113,14 @@
     },
     {
       "label": "Start All",
-      "dependsOn": ["Start Customer MS", "Start API Gateway", "Start Angular"],
-      "dependsOrder": "parallel"
+      "dependsOn": [
+        "Start Customer MS",
+        "Start Booking MS",
+        "Start Payment MS",
+        "Start API Gateway",
+        "Start Angular"
+      ],
+      "dependsOrder": "sequence"
     }
   ]
 }

@@ -1,5 +1,7 @@
 const { v4: uuidv4 } = require("uuid");
 
+const CAB_TYPES = ["Economic", "Premium", "Executive"];
+
 class Booking {
   constructor({
     id = uuidv4(),
@@ -9,6 +11,11 @@ class Booking {
     dateTime,
     passengers,
     cabType,
+    price = 0,
+    cabFareCents = null,
+    durationMinutes = null,
+    distanceKilometers = null,
+    paymentId = null,
     status = "upcoming",
     createdAt = new Date(),
     updatedAt = new Date(),
@@ -20,13 +27,18 @@ class Booking {
     this.dateTime = dateTime;
     this.passengers = passengers;
     this.cabType = cabType;
+    this.price = price;
+    this.cabFareCents = cabFareCents;
+    this.durationMinutes = durationMinutes;
+    this.distanceKilometers = distanceKilometers;
+    this.paymentId = paymentId;
     this.status = status;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
   }
 
   toFirestore() {
-    return {
+    const firestoreData = {
       id: this.id,
       customerId: this.customerId,
       startLocation: this.startLocation,
@@ -34,10 +46,16 @@ class Booking {
       dateTime: this.dateTime,
       passengers: this.passengers,
       cabType: this.cabType,
+      price: this.price,
+      cabFareCents: this.cabFareCents,
+      durationMinutes: this.durationMinutes,
+      distanceKilometers: this.distanceKilometers,
+      paymentId: this.paymentId,
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     };
+    return firestoreData;
   }
 
   static fromFirestore(doc) {
@@ -51,4 +69,4 @@ class Booking {
   }
 }
 
-module.exports = Booking;
+module.exports = { Booking, CAB_TYPES };

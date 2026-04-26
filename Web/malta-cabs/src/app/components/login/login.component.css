@@ -57,6 +57,11 @@
 }
 .field input::placeholder { color: rgba(255,255,255,0.2); }
 .field input:focus { border-color: #c5a050; }
+.error {
+  font-size: 0.75rem;
+  color: #e05c5c;
+  margin-top: 0.25rem;
+}
 .input-wrap {
   position: relative;
   display: flex;

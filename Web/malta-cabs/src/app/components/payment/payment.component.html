@@ -1,0 +1,77 @@
+<app-header />
+<main class="payment-page">
+  <div class="payment-card">
+    @if (isLoading) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p class="loading-text">Verifying payment...</p>
+      </div>
+    }
+
+    @if (!isLoading) {
+      <div class="auth-brand">
+        <span class="brand-icon">◆</span>
+        <span class="brand-name">MALTA <em>CABS</em></span>
+      </div>
+      <h2 class="page-title">Complete Payment</h2>
+      <p class="page-sub">Enter your card details to confirm your booking</p>
+
+      <div class="price-display">
+        <span class="price-label">Total Amount:</span>
+        <span class="price-amount">€{{ price.toFixed(2) }}</span>
+      </div>
+
+      <form [formGroup]="paymentForm" (ngSubmit)="onSubmit()" class="payment-form">
+        <div class="field">
+          <label>Card Holder Name</label>
+          <input type="text" formControlName="cardHolderName" placeholder="Jean Borg" />
+          @if (shouldProcessControlValidationMessages('cardHolderName')) {
+            <span class="error">{{ getErrorMessage('cardHolderName') }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <label>Card Number</label>
+          <input
+            type="text"
+            formControlName="cardNumber"
+            placeholder="1234 5678 9012 3456"
+            maxlength="19"
+            (input)="formatCardNumber($event)"
+          />
+          @if (shouldProcessControlValidationMessages('cardNumber')) {
+            <span class="error">{{ getErrorMessage('cardNumber') }}</span>
+          }
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label>Expiry Date</label>
+            <input
+              type="text"
+              formControlName="cardExpiry"
+              placeholder="MM/YY"
+              maxlength="5"
+              (input)="formatExpiry($event)"
+            />
+            @if (shouldProcessControlValidationMessages('cardExpiry')) {
+              <span class="error">{{ getErrorMessage('cardExpiry') }}</span>
+            }
+          </div>
+
+          <div class="field">
+            <label>CVV</label>
+            <input type="text" formControlName="cvv" placeholder="123" maxlength="3" />
+            @if (shouldProcessControlValidationMessages('cvv')) {
+              <span class="error">{{ getErrorMessage('cvv') }}</span>
+            }
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn" [disabled]="paymentForm.invalid || isSubmitting">
+          {{ isSubmitting ? 'Processing...' : 'Pay Now' }}
+        </button>
+      </form>
+    }
+  </div>
+</main>
