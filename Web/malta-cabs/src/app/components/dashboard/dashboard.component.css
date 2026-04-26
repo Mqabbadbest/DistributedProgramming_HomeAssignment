@@ -1,0 +1,150 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+
+.dashboard-page {
+  min-height: 100vh;
+  background: #0a0a0a;
+  padding: 100px 2rem 3rem;
+  font-family: 'DM Sans', sans-serif;
+  background-image: radial-gradient(ellipse 80% 40% at 50% 0%, rgba(197,160,80,0.05) 0%, transparent 60%);
+}
+
+.dashboard-inner { max-width: 1100px; margin: 0 auto; }
+
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 2.5rem;
+}
+
+.page-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.5rem;
+  font-weight: 300;
+  color: #fff;
+  margin-bottom: 0.25rem;
+}
+.page-sub { font-size: 0.85rem; color: rgba(255,255,255,0.35); font-weight: 300; }
+
+.btn-gold {
+  padding: 0.65rem 1.5rem;
+  background: #c5a050;
+  color: #0a0a0a;
+  text-decoration: none;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 500;
+  border-radius: 2px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn-gold:hover { background: #d4b060; }
+
+.loading-state, .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6rem 0;
+  gap: 1rem;
+  color: rgba(255,255,255,0.4);
+}
+
+.spinner {
+  width: 32px; height: 32px;
+  border: 2px solid rgba(197,160,80,0.15);
+  border-top-color: #c5a050;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.empty-icon { font-size: 2rem; color: rgba(197,160,80,0.3); }
+.empty-title { font-size: 1.1rem; color: rgba(255,255,255,0.5); }
+.empty-sub { font-size: 0.85rem; }
+
+.table-wrap {
+  border: 1px solid rgba(197,160,80,0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  animation: fadeUp 0.5s ease both;
+}
+
+.bookings-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.bookings-table thead tr {
+  background: rgba(197,160,80,0.05);
+  border-bottom: 1px solid rgba(197,160,80,0.12);
+}
+
+.bookings-table th {
+  padding: 1rem 1.25rem;
+  text-align: left;
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(197,160,80,0.7);
+  font-weight: 500;
+}
+
+.booking-row {
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.booking-row:hover { background: rgba(197,160,80,0.04); }
+.booking-row:last-child { border-bottom: none; }
+
+.bookings-table td {
+  padding: 1rem 1.25rem;
+  font-size: 0.87rem;
+  color: rgba(255,255,255,0.7);
+  vertical-align: middle;
+}
+
+.col-num { color: rgba(255,255,255,0.25); font-size: 0.8rem; }
+.col-date { color: rgba(255,255,255,0.5); font-size: 0.83rem; }
+.col-price { color: #c5a050; font-weight: 500; }
+
+.cab-badge {
+  padding: 0.25rem 0.6rem;
+  border-radius: 2px;
+  font-size: 0.73rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.cab-economic { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.6); }
+.cab-premium { background: rgba(197,160,80,0.12); color: #c5a050; }
+.cab-executive { background: rgba(197,160,80,0.2); color: #d4b060; }
+
+.badge {
+  padding: 0.25rem 0.6rem;
+  border-radius: 2px;
+  font-size: 0.73rem;
+  letter-spacing: 0.05em;
+}
+.badge-success { background: rgba(80,197,120,0.12); color: #50c578; }
+.badge-pending { background: rgba(255,200,80,0.1); color: rgba(255,200,80,0.7); }
+.badge-failed { background: rgba(255,80,80,0.12); color: #ff5050; }
+
+.open-link {
+  font-size: 0.78rem;
+  color: rgba(197,160,80,0.5);
+  letter-spacing: 0.05em;
+  transition: color 0.2s;
+}
+.booking-row:hover .open-link { color: #c5a050; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .col-distance, .col-duration { display: none; }
+  .page-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+}

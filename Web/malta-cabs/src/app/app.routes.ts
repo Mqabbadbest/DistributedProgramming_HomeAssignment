@@ -6,6 +6,9 @@ import { AddBookingComponent } from './components/add-booking/add-booking.compon
 import { authGuard } from './guards/auth.guard';
 import { PaymentComponent } from './components/payment/payment.component';
 import { paymentGuard } from './guards/payment.guard';
+import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { BookingDetailComponent } from './components/booking-detail/booking-detail.component';
+import { LocationComponent } from './components/location/location.component';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -17,4 +20,8 @@ export const routes: Routes = [
     component: PaymentComponent,
     canActivate: [authGuard, paymentGuard],
   },
+  { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
+  { path: 'booking-detail/:id', component: BookingDetailComponent, canActivate: [authGuard] },
+  { path: 'locations', component: LocationComponent, canActivate: [authGuard] },
+  { path: '**', redirectTo: '' },
 ];

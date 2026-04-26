@@ -1,0 +1,164 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+
+.detail-page {
+  min-height: 100vh;
+  background: #0a0a0a;
+  padding: 100px 2rem 3rem;
+  font-family: 'DM Sans', sans-serif;
+  background-image: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(197,160,80,0.05) 0%, transparent 60%);
+}
+
+.detail-inner { max-width: 900px; margin: 0 auto; }
+
+.back-link a {
+  font-size: 0.8rem;
+  color: rgba(197,160,80,0.6);
+  text-decoration: none;
+  letter-spacing: 0.05em;
+  transition: color 0.2s;
+}
+.back-link a:hover { color: #c5a050; }
+
+.detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin: 1.5rem 0 2rem;
+}
+
+.page-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.2rem;
+  font-weight: 300;
+  color: #fff;
+  margin-bottom: 0.25rem;
+}
+.page-sub { font-size: 0.85rem; color: rgba(255,255,255,0.35); }
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.detail-card {
+  padding: 2rem;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(197,160,80,0.1);
+  border-radius: 4px;
+  animation: fadeUp 0.5s ease both;
+}
+
+.detail-card:first-child { grid-column: 1 / -1; }
+
+.card-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: #c5a050;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(197,160,80,0.1);
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.detail-row:last-child { border-bottom: none; }
+
+.detail-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+}
+
+.detail-value { font-size: 0.9rem; color: rgba(255,255,255,0.8); }
+.detail-value.price { color: #c5a050; font-size: 1.1rem; font-weight: 500; }
+.detail-value.mono { font-family: monospace; font-size: 0.85rem; letter-spacing: 0.05em; }
+
+.detail-value-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.save-btn {
+  padding: 0.3rem 0.75rem;
+  background: transparent;
+  border: 1px solid rgba(197,160,80,0.3);
+  border-radius: 2px;
+  color: #c5a050;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  font-family: 'DM Sans', sans-serif;
+}
+.save-btn:hover { background: rgba(197,160,80,0.08); border-color: #c5a050; }
+
+.cab-badge {
+  padding: 0.4rem 1rem;
+  border-radius: 2px;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.cab-economic { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.6); }
+.cab-premium { background: rgba(197,160,80,0.12); color: #c5a050; }
+.cab-executive { background: rgba(197,160,80,0.2); color: #d4b060; }
+
+.badge { padding: 0.25rem 0.6rem; border-radius: 2px; font-size: 0.75rem; }
+.badge-success { background: rgba(80,197,120,0.12); color: #50c578; }
+.badge-pending { background: rgba(255,200,80,0.1); color: rgba(255,200,80,0.7); }
+.badge-failed { background: rgba(220,80,80,0.12); color: #dc5050; }
+
+.pay-btn {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.65rem 1.25rem;
+  background: #c5a050;
+  color: #0a0a0a;
+  text-decoration: none;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  transition: background 0.2s;
+}
+.pay-btn:hover { background: #d4b060; }
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6rem 0;
+  gap: 1rem;
+  color: rgba(255,255,255,0.4);
+}
+
+.spinner {
+  width: 32px; height: 32px;
+  border: 2px solid rgba(197,160,80,0.15);
+  border-top-color: #c5a050;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .detail-grid { grid-template-columns: 1fr; }
+  .detail-card:first-child { grid-column: 1; }
+}

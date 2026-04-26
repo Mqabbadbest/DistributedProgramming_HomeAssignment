@@ -31,6 +31,21 @@
 .logo-icon { color: #c5a050; font-size: 0.8rem; }
 .logo em { color: #c5a050; font-style: normal; }
 .nav { display: flex; gap: 0.75rem; align-items: center; }
+
+.nav-tab {
+  padding: 0.5rem 1rem;
+  color: rgba(255,255,255,0.6);
+  text-decoration: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+  border-bottom: 2px solid transparent;
+}
+.nav-tab:hover { color: #fff; }
+.nav-tab.active { color: #c5a050; border-bottom-color: #c5a050; }
+
 .btn {
   padding: 0.5rem 1.4rem;
   border-radius: 2px;

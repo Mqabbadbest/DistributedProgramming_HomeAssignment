@@ -1,12 +1,12 @@
-import { Component, OnInit } from '@angular/core';
-import { RouterLink, Router } from '@angular/router';
+import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
+import { RouterLink, Router, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [RouterLink, CommonModule],
+  imports: [RouterLink, CommonModule, RouterLinkActive],
   templateUrl: './header.component.html',
   styleUrl: './header.component.css',
 })
@@ -14,7 +14,11 @@ export class HeaderComponent implements OnInit {
   isAuthenticated = false;
   isDropdownOpen = false;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone,
+  ) {}
 
   ngOnInit(): void {
     this.checkAuthentication();
@@ -44,12 +48,15 @@ export class HeaderComponent implements OnInit {
       cancelButtonColor: '#6c757d',
     }).then((result) => {
       if (result.isConfirmed) {
-        localStorage.removeItem('isAuthenticated');
-        localStorage.removeItem('sessionToken');
-        localStorage.removeItem('customerId');
-        this.isAuthenticated = false;
-        this.isDropdownOpen = false;
-        this.router.navigate(['/']);
+        this.ngZone.run(() => {
+          localStorage.removeItem('isAuthenticated');
+          localStorage.removeItem('sessionToken');
+          localStorage.removeItem('customerId');
+          this.isAuthenticated = false;
+          this.isDropdownOpen = false;
+          this.cdr.detectChanges();
+          this.router.navigate(['/']);
+        });
       }
     });
   }

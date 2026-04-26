@@ -1,0 +1,137 @@
+<app-header />
+<main class="detail-page">
+  <div class="detail-inner">
+    @if (isLoading) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading booking details...</p>
+      </div>
+    }
+
+    @if (!isLoading && booking) {
+      <div class="back-link">
+        <a routerLink="/dashboard">← Back to Bookings</a>
+      </div>
+
+      <div class="detail-header">
+        <div>
+          <h1 class="page-title">Booking Details</h1>
+          <p class="page-sub">{{ booking.dateTime | date: 'EEEE, dd MMMM yyyy — HH:mm' }}</p>
+        </div>
+        <span class="cab-badge" [class]="'cab-' + booking.cabType?.toLowerCase()">
+          {{ booking.cabType }}
+        </span>
+      </div>
+
+      <div class="detail-grid">
+        <!-- Trip Info -->
+        <div class="detail-card">
+          <h3 class="card-title">Trip Information</h3>
+
+          <div class="detail-row">
+            <span class="detail-label">Pickup Location</span>
+            <div class="detail-value-row">
+              <span class="detail-value">
+                {{ booking.startLocation.lat.toFixed(5) }}°N,
+                {{ booking.startLocation.lng.toFixed(5) }}°E
+              </span>
+              <button class="save-btn" (click)="savePickupLocation()">♡ Save Location</button>
+            </div>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Pickup Address</span>
+            <span class="detail-value">{{ booking.startLocation.address }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Destination</span>
+            <span class="detail-value">
+              {{ booking.endLocation.lat.toFixed(5) }}°N, {{ booking.endLocation.lng.toFixed(5) }}°E
+            </span>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Destination Address</span>
+            <span class="detail-value">{{ booking.endLocation.address }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Distance</span>
+            <span class="detail-value">{{ booking.distanceKilometers?.toFixed(1) }} km</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Duration</span>
+            <span class="detail-value">{{ booking.durationMinutes?.toFixed(0) }} min</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Passengers</span>
+            <span class="detail-value">{{ booking.passengers }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Date & Time</span>
+            <span class="detail-value">{{ booking.dateTime | date: 'dd MMM yyyy, HH:mm' }}</span>
+          </div>
+        </div>
+
+        <!-- Customer Info -->
+        <div class="detail-card">
+          <h3 class="card-title">Customer</h3>
+          <div class="detail-row">
+            <span class="detail-label">Name</span>
+            <span class="detail-value">{{ customerName }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Customer email</span>
+            <span class="detail-value mono">{{ customerEmail }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Customer phone</span>
+            <span class="detail-value mono">{{ customerPhone }}</span>
+          </div>
+        </div>
+
+        <!-- Payment Info -->
+        <div class="detail-card">
+          <h3 class="card-title">Payment</h3>
+
+          <div class="detail-row">
+            <span class="detail-label">Price</span>
+            <span class="detail-value price">€{{ booking.price?.toFixed(2) }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="detail-label">Status</span>
+            @if (isPaymentSuccessful()) {
+              <span class="badge badge-success">✓ Paid</span>
+            } @else if (payment?.status === 'failed') {
+              <span class="badge badge-failed">✗ Failed</span>
+            } @else {
+              <span class="badge badge-pending">Pending</span>
+            }
+          </div>
+
+          @if (isPaymentSuccessful() && payment) {
+            <div class="detail-row">
+              <span class="detail-label">Card Holder</span>
+              <span class="detail-value">{{ payment.cardHolderName }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Card Number</span>
+              <span class="detail-value mono">{{ payment.maskedCardNumber }}</span>
+            </div>
+          }
+
+          @if (!isPaymentSuccessful() && payment?.status === 'pending') {
+            <a [routerLink]="['/payment', booking.paymentId]" class="pay-btn">
+              Complete Payment →
+            </a>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</main>
