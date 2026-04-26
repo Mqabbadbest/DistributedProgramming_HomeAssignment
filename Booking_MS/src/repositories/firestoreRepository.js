@@ -8,13 +8,13 @@ class BookingRepository {
     customerId,
     startLocation,
     endLocation,
-    dateTime,
     passengers,
     cabType,
     price,
     cabFareCents,
     durationMinutes,
     distanceKilometers,
+    applyDiscount,
   }) {
     if (!CAB_TYPES.includes(cabType))
       throw new Error(
@@ -25,15 +25,25 @@ class BookingRepository {
       customerId,
       startLocation,
       endLocation,
-      dateTime: new Date(dateTime),
       passengers,
       cabType,
       price,
       cabFareCents,
       durationMinutes,
       distanceKilometers,
+      applyDiscount: applyDiscount || false,
     });
-
+    console.log(
+      "[BookingRepository] Creating booking in Firestore with data:",
+      {
+        bookingId: booking.id,
+        customerId: booking.customerId,
+        cabType: booking.cabType,
+        price: booking.price,
+        status: booking.status,
+        applyDiscount: booking.applyDiscount,
+      },
+    );
     await db.collection(COLLECTION).doc(booking.id).set(booking.toFirestore());
     return booking;
   }
@@ -83,6 +93,14 @@ class BookingRepository {
     });
     // Return updated booking
     return this.findById(bookingId);
+  }
+
+  async getAllBookings(customerId) {
+    const snapshot = await db
+      .collection(COLLECTION)
+      .where("customerId", "==", customerId)
+      .get();
+    return snapshot.docs.map((doc) => Booking.fromFirestore(doc));
   }
 }
 

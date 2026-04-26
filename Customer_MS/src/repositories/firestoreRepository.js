@@ -100,6 +100,62 @@ class CustomerRepository {
     if (snapshot.empty) return null;
     return Customer.fromFirestore(snapshot.docs[0]);
   }
+
+  async getNotifications(customerId) {
+    console.log(
+      "[CustomerMS] Fetching notifications for customer:",
+      customerId,
+    );
+    const snapshot = await db
+      .collection("notifications")
+      .where("customerId", "==", customerId)
+      .orderBy("createdAt", "desc")
+      .get();
+    return snapshot.docs.map((doc) => {
+      const data = doc.data();
+      return { ...data, createdAt: data.createdAt?.toDate() };
+    });
+  }
+
+  async createNotification(customerId, message, type = "info") {
+    const Notification = require("../models/Notifications");
+    const notification = new Notification({ customerId, message, type });
+    await db
+      .collection("notifications")
+      .doc(notification.id)
+      .set(notification.toFirestore());
+    return notification;
+  }
+
+  async markDiscountNotificationSent(customerId) {
+    await db.collection("customers").doc(customerId).update({
+      isDiscountNotificationSent: true,
+      updatedAt: new Date(),
+    });
+  }
+
+  async markDiscountUsed(customerId) {
+    await db.collection("customers").doc(customerId).update({
+      isDiscountUsed: true,
+      updatedAt: new Date(),
+    });
+  }
+
+  async getDiscountStatus(customerId) {
+    const doc = await db.collection("customers").doc(customerId).get();
+    if (!doc.exists) {
+      // Return default values if customer doesn't exist (shouldn't happen, but handle gracefully)
+      return {
+        isDiscountNotificationSent: false,
+        isDiscountUsed: false,
+      };
+    }
+    const data = doc.data();
+    return {
+      isDiscountNotificationSent: data.isDiscountNotificationSent || false,
+      isDiscountUsed: data.isDiscountUsed || false,
+    };
+  }
 }
 
 module.exports = new CustomerRepository();

@@ -8,7 +8,6 @@ class Booking {
     customerId,
     startLocation,
     endLocation,
-    dateTime,
     passengers,
     cabType,
     price = 0,
@@ -16,6 +15,7 @@ class Booking {
     durationMinutes = null,
     distanceKilometers = null,
     paymentId = null,
+    applyDiscount = false,
     status = "upcoming",
     createdAt = new Date(),
     updatedAt = new Date(),
@@ -24,7 +24,6 @@ class Booking {
     this.customerId = customerId;
     this.startLocation = startLocation;
     this.endLocation = endLocation;
-    this.dateTime = dateTime;
     this.passengers = passengers;
     this.cabType = cabType;
     this.price = price;
@@ -32,6 +31,7 @@ class Booking {
     this.durationMinutes = durationMinutes;
     this.distanceKilometers = distanceKilometers;
     this.paymentId = paymentId;
+    this.applyDiscount = applyDiscount;
     this.status = status;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
@@ -43,7 +43,6 @@ class Booking {
       customerId: this.customerId,
       startLocation: this.startLocation,
       endLocation: this.endLocation,
-      dateTime: this.dateTime,
       passengers: this.passengers,
       cabType: this.cabType,
       price: this.price,
@@ -51,6 +50,7 @@ class Booking {
       durationMinutes: this.durationMinutes,
       distanceKilometers: this.distanceKilometers,
       paymentId: this.paymentId,
+      applyDiscount: this.applyDiscount,
       status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
@@ -62,7 +62,6 @@ class Booking {
     const data = doc.data();
     return new Booking({
       ...data,
-      dateTime: data.dateTime?.toDate(),
       createdAt: data.createdAt?.toDate(),
       updatedAt: data.updatedAt?.toDate(),
     });

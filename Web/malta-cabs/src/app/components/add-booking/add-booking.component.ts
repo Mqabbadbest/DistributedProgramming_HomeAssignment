@@ -6,6 +6,7 @@ import {
   Validators,
   AbstractControl,
   ValidationErrors,
+  FormsModule,
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -16,7 +17,7 @@ import { PaymentService, type PriceCalculationResponse } from '../../services/pa
 import { AuthService } from '../../services/auth.service';
 import { HeaderComponent } from '../../components/header/header.component';
 import Swal from 'sweetalert2';
-import { noPassedDateValidator } from '../../validators/NoPassedDateValidator.validator';
+import { NotificationService } from '../../services/notification.service';
 
 interface NominatimResult {
   lat: string;
@@ -26,7 +27,7 @@ interface NominatimResult {
 
 @Component({
   selector: 'app-add-booking',
-  imports: [ReactiveFormsModule, HeaderComponent, CommonModule],
+  imports: [ReactiveFormsModule, HeaderComponent, CommonModule, FormsModule],
   templateUrl: './add-booking.component.html',
   styleUrl: './add-booking.component.css',
 })
@@ -46,8 +47,12 @@ export class AddBookingComponent implements OnInit, OnDestroy {
   isCalculatingPrice = false;
   priceCalculationError: string | null = null;
 
+  hasDiscount = false;
+  discountAlreadyUsed = false;
+  applyDiscount = false;
+
   private debounceTimer: any;
-  private priceCalculationSubject = new Subject<void>();
+  public priceCalculationSubject = new Subject<void>();
   private priceCalculationSubscription: Subscription | null = null;
 
   readonly cabTypes = ['Economic', 'Premium', 'Executive'];
@@ -59,6 +64,7 @@ export class AddBookingComponent implements OnInit, OnDestroy {
     private router: Router,
     private authService: AuthService,
     private cdr: ChangeDetectorRef, // add this
+    private notificationService: NotificationService,
   ) {}
 
   ngOnInit(): void {
@@ -66,20 +72,33 @@ export class AddBookingComponent implements OnInit, OnDestroy {
     console.log('[AddBooking] Customer ID from localStorage:', localStorage.getItem('customerId'));
 
     this.bookingForm = this.formBuilder.group({
-      dateTime: ['', [Validators.required, noPassedDateValidator]],
       passengers: [1, [Validators.required, Validators.min(1), Validators.max(8)]],
       cabType: ['', Validators.required],
     });
 
-    // Set up price recalculation with debouncing - ONLY for passengers, dateTime, cabType
+    // Set up price recalculation with debouncing - ONLY for passengers, cabType
     this.priceCalculationSubscription = this.priceCalculationSubject
       .pipe(debounceTime(500))
       .subscribe(() => this.calculatePrice());
 
-    // Trigger price calculation only when passengers, dateTime, or cabType change (NOT on search input)
+    // Trigger price calculation only when passengers or cabType change (NOT on search input)
     this.bookingForm.valueChanges.subscribe((values) => {
-      console.log('[AddBooking] Form values changed (passengers/dateTime/cabType):', values);
+      console.log('[AddBooking] Form values changed (passengers/cabType):', values);
       this.priceCalculationSubject.next();
+    });
+
+    this.notificationService.getDiscountStatus().subscribe({
+      next: (status) => {
+        console.log('[AddBooking] Discount status received:', status);
+        this.hasDiscount = status.isDiscountNotificationSent && !status.isDiscountUsed;
+        this.discountAlreadyUsed = status.isDiscountUsed;
+        console.log('[AddBooking] hasDiscount set to:', this.hasDiscount);
+        console.log('[AddBooking] discountAlreadyUsed set to:', this.discountAlreadyUsed);
+        this.cdr.detectChanges(); // ensure UI updates with new discount status
+      },
+      error: (err) => {
+        console.error('[AddBooking] Failed to get discount status:', err);
+      },
     });
   }
 
@@ -158,13 +177,16 @@ export class AddBookingComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const currentDateTime = new Date().toISOString();
+
     const requestPayload = {
       customerId: localStorage.getItem('customerId') || '',
       cabType: this.bookingForm.value.cabType,
-      dateTime: this.bookingForm.value.dateTime,
       passengers: this.bookingForm.value.passengers,
       startLocation: this.originSelected,
       endLocation: this.destinationSelected,
+      currentDateTime,
+      applyDiscount: this.applyDiscount,
     };
 
     console.log('[AddBooking] Sending price calculation request:', requestPayload);
@@ -246,11 +268,21 @@ export class AddBookingComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Toggle discount and recalculate price.
+   */
+  toggleDiscount(): void {
+    this.applyDiscount = !this.applyDiscount;
+    console.log('[AddBooking] Discount toggled to:', this.applyDiscount);
+    this.priceCalculationSubject.next();
+  }
+
+  /**
    * Submits the booking form to the API.
    * If successful, the user is redirected to the dashboard.
    */
   onSubmit(): void {
     console.log('[AddBooking] onSubmit() called');
+    console.log('[AddBooking] applyDiscount at submission time:', this.applyDiscount);
     console.log('[AddBooking] Form valid?', this.bookingForm.valid);
 
     if (this.bookingForm.invalid) {
@@ -300,15 +332,18 @@ export class AddBookingComponent implements OnInit, OnDestroy {
     const payload = {
       startLocation: this.originSelected,
       endLocation: this.destinationSelected,
-      dateTime: this.bookingForm.value.dateTime,
       passengers: this.bookingForm.value.passengers,
       cabType: this.bookingForm.value.cabType,
       price: this.calculatedPrice,
       cabFareCents: this.tripDetails?.cabFareCents,
       durationMinutes: this.tripDetails?.durationMinutes,
       distanceKilometers: this.tripDetails?.distanceKilometers,
+      applyDiscount: this.applyDiscount,
     };
 
+    console.log('[AddBooking] *** applyDiscount in payload:', payload.applyDiscount);
+    console.log('[AddBooking] *** this.applyDiscount:', this.applyDiscount);
+    console.log('[AddBooking] *** hasDiscount:', this.hasDiscount);
     console.log('[AddBooking] Submitting booking to Booking MS with payload:', payload);
 
     this.bookingService.createBooking(payload).subscribe({

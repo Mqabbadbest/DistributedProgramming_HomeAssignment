@@ -7,10 +7,11 @@ import { PaymentDTO } from '../dto/payment.dto';
 export interface CalculatePriceRequest {
   customerId: string;
   cabType: string;
-  dateTime: string;
   passengers: number;
   startLocation: { lat: number; lng: number };
   endLocation: { lat: number; lng: number };
+  currentDateTime?: string;
+  applyDiscount?: boolean;
 }
 
 export interface PriceCalculationResponse {

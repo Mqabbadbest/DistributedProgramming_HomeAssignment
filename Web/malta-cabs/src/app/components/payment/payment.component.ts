@@ -5,6 +5,7 @@ import { PaymentService } from '../../services/payment.service';
 import { HeaderComponent } from '../../components/header/header.component';
 import { luhnValidator, futureDateValidator } from '../../validators/card.validators';
 import Swal from 'sweetalert2';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-payment',
@@ -25,6 +26,7 @@ export class PaymentComponent implements OnInit {
     private router: Router,
     private paymentService: PaymentService,
     private cdr: ChangeDetectorRef,
+    private notificationService: NotificationService,
   ) {}
 
   /**
@@ -137,6 +139,22 @@ export class PaymentComponent implements OnInit {
       .subscribe({
         next: (response) => {
           console.log('[Payment] ✓ Payment successful:', response);
+          console.log('[Payment] Response discountApplied:', response.discountApplied);
+
+          if (response.discountApplied) {
+            console.log('[Payment] Calling markDiscountUsed()...');
+            this.notificationService.markDiscountUsed().subscribe({
+              next: (result) => {
+                console.log('[Payment] ✓ Discount marked as used:', result);
+              },
+              error: (err) => {
+                console.error('[Payment] ✗ Failed to mark discount used:', err);
+              },
+            });
+          } else {
+            console.log('[Payment] Discount was NOT applied, skipping markDiscountUsed()');
+          }
+
           this.isSubmitting = false;
           Swal.fire({
             title: 'Payment successful!',
@@ -147,7 +165,7 @@ export class PaymentComponent implements OnInit {
             background: '#1a1a1a',
             color: '#fff',
           });
-          setTimeout(() => this.router.navigate(['/']), 2500);
+          setTimeout(() => this.router.navigate(['/dashboard']), 2500);
         },
         error: (err) => {
           this.isSubmitting = false;
@@ -161,7 +179,7 @@ export class PaymentComponent implements OnInit {
             background: '#1a1a1a',
             color: '#fff',
             confirmButtonColor: '#c5a050',
-          }).then(() => this.router.navigate(['/']));
+          }).then(() => this.router.navigate(['/dashboard']));
         },
       });
   }
