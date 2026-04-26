@@ -49,7 +49,7 @@ export class HeaderComponent implements OnInit {
         localStorage.removeItem('customerId');
         this.isAuthenticated = false;
         this.isDropdownOpen = false;
-        this.router.navigate(['/login']);
+        this.router.navigate(['/']);
       }
     });
   }

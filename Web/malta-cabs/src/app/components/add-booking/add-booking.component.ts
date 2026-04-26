@@ -1,5 +1,12 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+  AbstractControl,
+  ValidationErrors,
+} from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Subject, Subscription } from 'rxjs';
@@ -9,6 +16,7 @@ import { PaymentService, type PriceCalculationResponse } from '../../services/pa
 import { AuthService } from '../../services/auth.service';
 import { HeaderComponent } from '../../components/header/header.component';
 import Swal from 'sweetalert2';
+import { noPassedDateValidator } from '../../validators/NoPassedDateValidator.validator';
 
 interface NominatimResult {
   lat: string;
@@ -29,8 +37,8 @@ export class AddBookingComponent implements OnInit, OnDestroy {
   destinationQuery = '';
   originResults: NominatimResult[] = [];
   destinationResults: NominatimResult[] = [];
-  originSelected: { lat: number; lng: number } | null = null;
-  destinationSelected: { lat: number; lng: number } | null = null;
+  originSelected: { lat: number; lng: number; address?: string } | null = null;
+  destinationSelected: { lat: number; lng: number; address?: string } | null = null;
 
   // Price calculation properties
   calculatedPrice: number | null = null;
@@ -58,7 +66,7 @@ export class AddBookingComponent implements OnInit, OnDestroy {
     console.log('[AddBooking] Customer ID from localStorage:', localStorage.getItem('customerId'));
 
     this.bookingForm = this.formBuilder.group({
-      dateTime: ['', Validators.required],
+      dateTime: ['', [Validators.required, noPassedDateValidator]],
       passengers: [1, [Validators.required, Validators.min(1), Validators.max(8)]],
       cabType: ['', Validators.required],
     });
@@ -111,7 +119,11 @@ export class AddBookingComponent implements OnInit, OnDestroy {
    * @param result The selected Nominatim result.
    */
   selectOrigin(result: NominatimResult) {
-    this.originSelected = { lat: parseFloat(result.lat), lng: parseFloat(result.lon) };
+    this.originSelected = {
+      lat: parseFloat(result.lat),
+      lng: parseFloat(result.lon),
+      address: result.display_name,
+    };
     this.originQuery = result.display_name;
     this.originResults = [];
     this.cdr.detectChanges(); // update input value and clear dropdown
@@ -119,7 +131,11 @@ export class AddBookingComponent implements OnInit, OnDestroy {
   }
 
   selectDestination(result: NominatimResult) {
-    this.destinationSelected = { lat: parseFloat(result.lat), lng: parseFloat(result.lon) };
+    this.destinationSelected = {
+      lat: parseFloat(result.lat),
+      lng: parseFloat(result.lon),
+      address: result.display_name,
+    };
     this.destinationQuery = result.display_name;
     this.destinationResults = [];
     this.cdr.detectChanges(); // update input value and clear dropdown
@@ -184,16 +200,6 @@ export class AddBookingComponent implements OnInit, OnDestroy {
     });
   }
 
-  // /**
-  //  * Resets price calculation when locations change.
-  //  */
-  // private resetPrice(): void {
-  //   console.log('[AddBooking] Resetting price calculation');
-  //   this.calculatedPrice = null;
-  //   this.tripDetails = null;
-  //   this.priceCalculationError = null;
-  // }
-
   /**
    * Uses the browser's geolocation API to set the user's current location as origin.
    */
@@ -207,7 +213,7 @@ export class AddBookingComponent implements OnInit, OnDestroy {
             `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
           );
           const data = await res.json();
-          this.originSelected = { lat, lng };
+          this.originSelected = { lat, lng, address: data.display_name };
           this.originQuery = data.display_name;
           this.cdr.detectChanges(); // update input immediately
           this.priceCalculationSubject.next();
@@ -326,7 +332,7 @@ export class AddBookingComponent implements OnInit, OnDestroy {
         });
         setTimeout(() => {
           console.log('[AddBooking] Redirecting to dashboard');
-          this.router.navigate(['/dashboard']);
+          this.router.navigate(['/']);
         }, 2000);
       },
       error: (err) => {

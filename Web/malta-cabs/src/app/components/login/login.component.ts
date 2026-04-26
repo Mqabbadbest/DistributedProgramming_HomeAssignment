@@ -66,7 +66,7 @@ export class LoginComponent implements OnInit {
           background: '#1a1a1a',
           color: '#fff',
         });
-        setTimeout(() => this.router.navigate(['/addBooking']), 2000);
+        setTimeout(() => this.router.navigate(['/']), 2000);
       },
       error: (err) => {
         console.error('Failed to login:', err);

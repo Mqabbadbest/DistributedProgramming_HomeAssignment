@@ -66,7 +66,7 @@ export class AuthService {
     return localStorage.getItem('customerId');
   }
 
-  private logout() {
+  public logout() {
     this.isAuthenticated = false;
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('sessionToken');
@@ -75,6 +75,10 @@ export class AuthService {
   }
 
   public canAccessRoute(): boolean {
-    return this.isAuthenticated;
+    // Check if session token actually exists in localStorage
+    const hasSessionToken = !!this.getSessionToken();
+    // Keep in-memory state in sync with localStorage
+    this.isAuthenticated = hasSessionToken;
+    return hasSessionToken;
   }
 }

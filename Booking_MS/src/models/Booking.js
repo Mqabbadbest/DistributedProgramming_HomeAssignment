@@ -38,7 +38,7 @@ class Booking {
   }
 
   toFirestore() {
-    return {
+    const firestoreData = {
       id: this.id,
       customerId: this.customerId,
       startLocation: this.startLocation,
@@ -55,6 +55,7 @@ class Booking {
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     };
+    return firestoreData;
   }
 
   static fromFirestore(doc) {
