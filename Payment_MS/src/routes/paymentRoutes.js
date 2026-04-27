@@ -9,6 +9,9 @@ const { getFareDetails } = require("../utils/fareService");
 const CUSTOMER_SERVICE_URL =
   process.env.CUSTOMER_SERVICE_URL || "http://localhost:3000";
 
+const BOOKING_SERVICE_URL =
+  process.env.BOOKING_SERVICE_URL || "http://localhost:3001";
+
 // ─── Auth Middleware ──────────────────────────────────────────────────────────
 const requireAuth = async (req, res, next) => {
   const token = req.headers["x-session-token"];
@@ -32,27 +35,71 @@ router.post("/calculate", async (req, res) => {
     const {
       customerId,
       cabType,
-      dateTime,
       passengers,
       startLocation,
       endLocation,
+      applyDiscount,
+      currentDateTime,
     } = req.body;
 
     if (
       !customerId ||
       !cabType ||
-      !dateTime ||
       !passengers ||
       !startLocation ||
       !endLocation
     )
       return res.status(400).json({ error: "All fields are required" });
 
+    console.log("[PaymentMS] /calculate called with data:", {
+      customerId,
+      cabType,
+      passengers,
+      startLocation,
+      endLocation,
+      applyDiscount,
+      currentDateTime,
+    });
     // Get fare details from RapidAPI
     const { cabFare, cabFareCents, durationMinutes, distanceKilometers } =
       await getFareDetails(startLocation, endLocation);
 
-    const price = calculatePrice(cabFare, cabType, dateTime, passengers);
+    let price = calculatePrice(cabFare, cabType, passengers, currentDateTime);
+
+    let discountApplied = false;
+
+    if (applyDiscount && customerId) {
+      try {
+        const statusRes = await axios.get(
+          `${CUSTOMER_SERVICE_URL}/customers/discount-status`,
+          {
+            headers: {
+              "x-session-token": req.headers["x-session-token"] || "",
+            },
+          },
+        );
+
+        const { isDiscountNotificationSent, isDiscountUsed } = statusRes.data;
+        console.log(
+          "[PaymentMS] Discount status for customer:",
+          customerId,
+          "isDiscountNotificationSent:",
+          isDiscountNotificationSent,
+          "isDiscountUsed:",
+          isDiscountUsed,
+        );
+        if (isDiscountNotificationSent && !isDiscountUsed) {
+          price = parseFloat((price * 0.7).toFixed(2)); // 30% off
+          discountApplied = true;
+          console.log("[PaymentMS] ✓ 30% discount applied, new price:", price);
+        }
+      } catch (err) {
+        console.error(
+          "[PaymentMS] Could not verify discount status:",
+          err.message,
+        );
+      }
+    }
 
     console.log("[PaymentMS] /calculate: Calculated price:", {
       customerId,
@@ -60,6 +107,7 @@ router.post("/calculate", async (req, res) => {
       durationMinutes,
       distanceKilometers,
       cabFareCents,
+      discountApplied,
     });
 
     // Return price & trip details (no payment created yet)
@@ -68,6 +116,7 @@ router.post("/calculate", async (req, res) => {
       cabFareCents,
       durationMinutes,
       distanceKilometers,
+      discountApplied,
     });
   } catch (err) {
     console.error("[PaymentMS] /calculate error:", err.message);
@@ -134,7 +183,70 @@ router.post("/:paymentId/pay", requireAuth, async (req, res) => {
       cardExpiry,
     });
 
-    res.status(200).json(payment);
+    // Discount is applied only if:
+    // 1. The customer selected applyDiscount=true during booking, AND
+    // 2. The discount was available (notification sent and not yet used)
+    let discountApplied = false;
+    try {
+      console.log("[PaymentMS] /pay: Checking discount eligibility...");
+      console.log("[PaymentMS] Payment bookingId:", payment.bookingId);
+
+      if (payment.bookingId) {
+        console.log(
+          `[PaymentMS] /pay: Fetching booking ${payment.bookingId} from Booking MS...`,
+        );
+        // Get the booking to check if customer requested the discount
+        const bookingRes = await axios.get(
+          `${BOOKING_SERVICE_URL}/bookings/internal/${payment.bookingId}`,
+        );
+        const { applyDiscount } = bookingRes.data;
+        console.log("[PaymentMS] /pay: Booking applyDiscount:", applyDiscount);
+
+        // Only apply discount if customer explicitly requested it during booking
+        if (applyDiscount) {
+          console.log(
+            "[PaymentMS] /pay: Customer requested discount, checking availability...",
+          );
+          // Also verify the discount is still available
+          const statusRes = await axios.get(
+            `${CUSTOMER_SERVICE_URL}/customers/discount-status`,
+            {
+              headers: {
+                "x-session-token": req.headers["x-session-token"] || "",
+              },
+            },
+          );
+          const { isDiscountNotificationSent, isDiscountUsed } = statusRes.data;
+          console.log(
+            "[PaymentMS] /pay: Discount status - sent:",
+            isDiscountNotificationSent,
+            "used:",
+            isDiscountUsed,
+          );
+          // Only mark as applied if discount was available and requested
+          discountApplied = isDiscountNotificationSent && !isDiscountUsed;
+          console.log("[PaymentMS] /pay: Discount applied?", discountApplied);
+        } else {
+          console.log(
+            "[PaymentMS] /pay: Customer did NOT request discount in booking",
+          );
+        }
+      } else {
+        console.log("[PaymentMS] /pay: No bookingId found on payment");
+      }
+    } catch (err) {
+      console.error(
+        "[PaymentMS] Could not verify discount eligibility:",
+        err.message,
+      );
+      console.error("[PaymentMS] Error details:", err.response?.data || err);
+    }
+
+    console.log(
+      "[PaymentMS] /pay: Returning discountApplied:",
+      discountApplied,
+    );
+    res.status(200).json({ ...payment, discountApplied });
   } catch (err) {
     res
       .status(

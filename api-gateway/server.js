@@ -3,6 +3,8 @@ const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
 
+//https://api-gateway-148505769651.europe-west1.run.app
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -41,6 +43,67 @@ app.post("/customers/login", async (req, res) => {
     const response = await axios.post(
       `${CUSTOMER_SERVICE}/customers/login`,
       req.body,
+    );
+    res.status(response.status).json(response.data);
+  } catch (err) {
+    res
+      .status(err.response?.status || 502)
+      .json(err.response?.data || { error: "Customer service unavailable" });
+  }
+});
+
+app.get("/customers/notifications", async (req, res) => {
+  try {
+    console.log(
+      "[APIGateway] GET /customers/notifications called with token:",
+      req.headers["x-session-token"],
+    );
+    const response = await axios.get(
+      `${CUSTOMER_SERVICE}/customers/notifications`,
+      {
+        headers: { "x-session-token": req.headers["x-session-token"] },
+      },
+    );
+    console.log(
+      "[APIGateway] GET /customers/notifications response:",
+      response.data,
+    );
+    res.status(response.status).json(response.data);
+  } catch (err) {
+    console.error(
+      "[APIGateway] GET /customers/notifications error:",
+      err.response?.data || err.message,
+    );
+    res
+      .status(err.response?.status || 502)
+      .json(err.response?.data || { error: "Customer service unavailable" });
+  }
+});
+
+app.get("/customers/discount-status", async (req, res) => {
+  try {
+    const response = await axios.get(
+      `${CUSTOMER_SERVICE}/customers/discount-status`,
+      {
+        headers: { "x-session-token": req.headers["x-session-token"] },
+      },
+    );
+    res.status(response.status).json(response.data);
+  } catch (err) {
+    res
+      .status(err.response?.status || 502)
+      .json(err.response?.data || { error: "Customer service unavailable" });
+  }
+});
+
+app.post("/customers/mark-discount-used", async (req, res) => {
+  try {
+    const response = await axios.post(
+      `${CUSTOMER_SERVICE}/customers/mark-discount-used`,
+      req.body,
+      {
+        headers: { "x-session-token": req.headers["x-session-token"] },
+      },
     );
     res.status(response.status).json(response.data);
   } catch (err) {
@@ -143,6 +206,11 @@ app.post("/payments/calculate", async (req, res) => {
     const response = await axios.post(
       `${PAYMENT_SERVICE}/payments/calculate`,
       req.body,
+      {
+        headers: {
+          "x-session-token": req.headers["x-session-token"],
+        },
+      },
     );
     res.status(response.status).json(response.data);
   } catch (err) {

@@ -10,6 +10,7 @@ class Payment {
     cardHolderName = "",
     maskedCardNumber = "", // 411111......1111
     cardToken = "", // encrypted card details
+    discountApplied = false,
     createdAt = new Date(),
     updatedAt = new Date(),
   }) {
@@ -21,6 +22,7 @@ class Payment {
     this.cardHolderName = cardHolderName;
     this.maskedCardNumber = maskedCardNumber;
     this.cardToken = cardToken;
+    this.discountApplied = discountApplied;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
   }
@@ -35,6 +37,7 @@ class Payment {
       cardHolderName: this.cardHolderName,
       maskedCardNumber: this.maskedCardNumber,
       cardToken: this.cardToken,
+      discountApplied: this.discountApplied,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     };

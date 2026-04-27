@@ -3,7 +3,6 @@ export class BookingDTO {
   private _customerId: string;
   private _startLocation: { lat: number; lng: number };
   private _endLocation: { lat: number; lng: number };
-  private _dateTime: string;
   private _passengers: number;
   private _cabType: 'Economic' | 'Premium' | 'Executive';
   private _price: number;
@@ -20,7 +19,6 @@ export class BookingDTO {
     customerId: string,
     startLocation: { lat: number; lng: number },
     endLocation: { lat: number; lng: number },
-    dateTime: string,
     passengers: number,
     cabType: 'Economic' | 'Premium' | 'Executive',
     price: number,
@@ -36,7 +34,6 @@ export class BookingDTO {
     this._customerId = customerId;
     this._startLocation = startLocation;
     this._endLocation = endLocation;
-    this._dateTime = dateTime;
     this._passengers = passengers;
     this._cabType = cabType;
     this._price = price;
@@ -60,9 +57,6 @@ export class BookingDTO {
   }
   get endLocation() {
     return this._endLocation;
-  }
-  get dateTime() {
-    return this._dateTime;
   }
   get passengers() {
     return this._passengers;

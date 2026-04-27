@@ -3,20 +3,17 @@ import { LocationDTO } from './location.dto';
 export class BookingRequestDTO {
   private _startLocation: LocationDTO;
   private _endLocation: LocationDTO;
-  private _dateTime: string;
   private _passengers: number;
   private _cabType: 'Economic' | 'Premium' | 'Executive';
 
   constructor(
     startLocation: LocationDTO,
     endLocation: LocationDTO,
-    dateTime: string,
     passengers: number,
     cabType: 'Economic' | 'Premium' | 'Executive',
   ) {
     this._startLocation = startLocation;
     this._endLocation = endLocation;
-    this._dateTime = dateTime;
     this._passengers = passengers;
     this._cabType = cabType;
   }
@@ -33,13 +30,6 @@ export class BookingRequestDTO {
   }
   set endLocation(value: LocationDTO) {
     this._endLocation = value;
-  }
-
-  get dateTime(): string {
-    return this._dateTime;
-  }
-  set dateTime(value: string) {
-    this._dateTime = value;
   }
 
   get passengers(): number {

@@ -7,7 +7,7 @@ import { DatePipe } from '@angular/common';
 import Swal from 'sweetalert2';
 @Component({
   selector: 'app-location',
-  imports: [RouterLink, HeaderComponent, ReactiveFormsModule, DatePipe],
+  imports: [HeaderComponent, ReactiveFormsModule, DatePipe],
   templateUrl: './location.component.html',
   styleUrl: './location.component.css',
 })

@@ -2,6 +2,8 @@ require("dotenv").config();
 const express = require("express");
 const locationRoutes = require("./src/routes/LocationRoutes");
 
+//https://location-ms-148505769651.europe-west1.run.app
+
 const app = express();
 app.use(express.json());
 

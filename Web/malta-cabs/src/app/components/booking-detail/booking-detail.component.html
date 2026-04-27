@@ -16,7 +16,7 @@
       <div class="detail-header">
         <div>
           <h1 class="page-title">Booking Details</h1>
-          <p class="page-sub">{{ booking.dateTime | date: 'EEEE, dd MMMM yyyy — HH:mm' }}</p>
+          <p class="page-sub">{{ booking.createdAt | date: 'EEEE, dd MMMM yyyy — HH:mm' }}</p>
         </div>
         <span class="cab-badge" [class]="'cab-' + booking.cabType?.toLowerCase()">
           {{ booking.cabType }}
@@ -73,7 +73,7 @@
 
           <div class="detail-row">
             <span class="detail-label">Date & Time</span>
-            <span class="detail-value">{{ booking.dateTime | date: 'dd MMM yyyy, HH:mm' }}</span>
+            <span class="detail-value">{{ booking.createdAt | date: 'dd MMM yyyy, HH:mm' }}</span>
           </div>
         </div>
 

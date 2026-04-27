@@ -45,19 +45,18 @@ router.post("/", requireAuth, async (req, res) => {
     const {
       startLocation,
       endLocation,
-      dateTime,
       passengers,
       cabType,
       price,
       cabFareCents,
       durationMinutes,
       distanceKilometers,
+      applyDiscount,
     } = req.body;
 
     console.log("[BookingMS] Destructured fields:", {
       startLocation,
       endLocation,
-      dateTime,
       passengers,
       cabType,
       price,
@@ -70,7 +69,6 @@ router.post("/", requireAuth, async (req, res) => {
     if (
       !startLocation ||
       !endLocation ||
-      !dateTime ||
       !passengers ||
       !cabType ||
       price === undefined
@@ -78,7 +76,6 @@ router.post("/", requireAuth, async (req, res) => {
       console.warn("[BookingMS] ✗ Validation failed - missing fields:", {
         hasStartLocation: !!startLocation,
         hasEndLocation: !!endLocation,
-        hasDateTime: !!dateTime,
         hasPassengers: !!passengers,
         hasCabType: !!cabType,
         hasPrice: price !== undefined,
@@ -121,13 +118,13 @@ router.post("/", requireAuth, async (req, res) => {
       customerId: req.customerId,
       startLocation,
       endLocation,
-      dateTime,
       passengers,
       cabType,
       price,
       cabFareCents,
       durationMinutes: durationMinutes || null,
       distanceKilometers: distanceKilometers || null,
+      applyDiscount: applyDiscount || false,
     });
 
     console.log("[BookingMS] ✓ Booking created in Firestore:", {
@@ -169,7 +166,56 @@ router.post("/", requireAuth, async (req, res) => {
         paymentId: paymentResponse.data.paymentId,
       });
 
+      try {
+        const allBookings = await bookingRepository.getAllBookings(
+          req.customerId,
+        );
+        const bookingCount = allBookings.length;
+
+        console.log(
+          `[BookingMS] Customer ${req.customerId} has ${bookingCount} total bookings`,
+        );
+
+        await axios.post(
+          `${CUSTOMER_SERVICE_URL}/customers/internal/check-discount`,
+          {
+            customerId: req.customerId,
+            bookingCount,
+          },
+        );
+
+        console.log("[BookingMS] ✓ Discount check completed");
+      } catch (discountErr) {
+        console.error(
+          "[BookingMS] ✗ Discount check failed:",
+          discountErr.message,
+        );
+        // Non-fatal — don't fail the booking
+      }
+
       res.status(201).json(bookingWithPayment);
+
+      // After res.status(201).json(bookingWithPayment) — add this
+      try {
+        await axios.post(`${CUSTOMER_SERVICE_URL}/customers/internal/events`, {
+          type: "booking-created",
+          data: {
+            customerId: req.customerId,
+            bookingId: booking.id,
+            cabType,
+            startLocation,
+            endLocation,
+            passengers,
+            price,
+          },
+        });
+        console.log("[BookingMS] ✓ booking-created event sent to Customer MS");
+      } catch (err) {
+        console.error(
+          "[BookingMS] ✗ Failed to send booking-created event:",
+          err.message,
+        );
+      }
     } catch (paymentError) {
       console.error("[BookingMS] ✗ Payment MS call failed:", {
         message: paymentError.message,
@@ -220,6 +266,28 @@ router.get("/past", requireAuth, async (req, res) => {
     res.status(200).json(bookings);
   } catch (err) {
     console.error("[BookingMS] ✗ Error fetching past bookings:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /internal/bookings/:id — internal endpoint for other microservices (no auth required)
+// Must come BEFORE wildcard /:id route so it matches correctly
+router.get("/internal/:id", async (req, res) => {
+  console.log("[BookingMS] GET /internal/bookings/:id →", req.params.id);
+  try {
+    const booking = await bookingRepository.findById(req.params.id);
+    if (!booking) {
+      console.warn("[BookingMS] ✗ Booking not found:", req.params.id);
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    console.log("[BookingMS] ✓ Returning booking (internal):", booking.id);
+    res.status(200).json(booking);
+  } catch (err) {
+    console.error(
+      "[BookingMS] ✗ Error fetching booking (internal):",
+      err.message,
+    );
     res.status(500).json({ error: err.message });
   }
 });

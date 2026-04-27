@@ -1,6 +1,8 @@
-import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
 import { RouterLink, Router, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { NotificationService, NotificationDTO } from '../../services/notification.service';
+import { interval, Subscription } from 'rxjs';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -10,20 +12,49 @@ import Swal from 'sweetalert2';
   templateUrl: './header.component.html',
   styleUrl: './header.component.css',
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent implements OnInit, OnDestroy {
   isAuthenticated = false;
   isDropdownOpen = false;
+  isNotificationsOpen = false;
+  notifications: NotificationDTO[] = [];
+  unreadCount = 0;
+  private notificationPolling: Subscription | null = null;
 
   constructor(
     private router: Router,
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone,
+    private notificationService: NotificationService,
   ) {}
 
   ngOnInit(): void {
     this.checkAuthentication();
     // Listen for storage changes to update auth status
+    this.loadNotifications();
     window.addEventListener('storage', () => this.checkAuthentication());
+
+    // Start polling for new notifications every 2 mins
+    // this.notificationPolling = interval(120000).subscribe(() => {
+    //   this.loadNotifications();
+    // });
+  }
+
+  ngOnDestroy(): void {
+    // Clean up polling subscription
+    if (this.notificationPolling) {
+      this.notificationPolling.unsubscribe();
+    }
+  }
+
+  loadNotifications(): void {
+    if (!this.isAuthenticated) return;
+    this.notificationService.getNotifications().subscribe({
+      next: (notifications) => {
+        this.notifications = notifications;
+        this.unreadCount = notifications.filter((n) => !n.read).length;
+      },
+      error: () => {},
+    });
   }
 
   checkAuthentication(): void {
@@ -32,6 +63,12 @@ export class HeaderComponent implements OnInit {
 
   toggleDropdown(): void {
     this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  toggleNotifications(): void {
+    this.isNotificationsOpen = !this.isNotificationsOpen;
+    this.isDropdownOpen = false;
+    if (this.isNotificationsOpen) this.loadNotifications();
   }
 
   logout(): void {

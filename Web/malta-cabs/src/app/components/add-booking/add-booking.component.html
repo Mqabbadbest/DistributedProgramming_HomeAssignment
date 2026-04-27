@@ -59,20 +59,6 @@
         }
       </div>
 
-      <!-- Date & Time -->
-      <div class="field">
-        <label>Date & Time</label>
-        <input type="datetime-local" formControlName="dateTime" />
-        @if (shouldProcessControlValidationMessages('dateTime')) {
-          @if (bookingForm.get('dateTime')?.hasError('required')) {
-            <span class="error">Date and time are required</span>
-          }
-          @if (bookingForm.get('dateTime')?.hasError('passingDate')) {
-            <span class="error">Date and time cannot be in the past</span>
-          }
-        }
-      </div>
-
       <!-- Passengers -->
       <div class="field">
         <label>Number of Passengers</label>
@@ -109,6 +95,28 @@
           <span class="error">Please select a cab type</span>
         }
       </div>
+
+      @if (hasDiscount) {
+        <div class="discount-toggle">
+          <div class="discount-info">
+            <span class="discount-icon">🎉</span>
+            <div>
+              <p class="discount-title">30% Discount Available!</p>
+              <p class="discount-sub">You've earned a discount for completing 3 bookings</p>
+            </div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" [checked]="applyDiscount" (change)="toggleDiscount()" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      }
+
+      @if (discountAlreadyUsed) {
+        <div class="discount-used">
+          <span>✓ Discount already used on a previous booking</span>
+        </div>
+      }
 
       <!-- Price Calculation Section -->
       <div class="price-section">

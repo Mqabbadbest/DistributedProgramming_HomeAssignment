@@ -80,6 +80,52 @@ router.get("/me", async (req, res) => {
     const { passwordHash: _, ...safe } = customer;
     res.status(200).json(safe);
   } catch (err) {
+    res.status(401).json({ error: err.message });
+  }
+});
+
+// GET /customers/notifications — get notifications for logged in customer
+router.get("/notifications", requireAuth, async (req, res) => {
+  try {
+    console.log(
+      "[CustomerMS] GET /customers/notifications for customer:",
+      req.customer.id,
+    );
+    const notifications = await customerRepository.getNotifications(
+      req.customer.id,
+    );
+    console.log(`[CustomerMS] ✓ Found ${notifications.length} notifications`);
+    res.status(200).json(notifications);
+  } catch (err) {
+    console.error("[CustomerMS] ✗ Error fetching notifications:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /customers/discount-status — get discount status for logged in customer
+router.get("/discount-status", requireAuth, async (req, res) => {
+  try {
+    const status = await customerRepository.getDiscountStatus(req.customer.id);
+    console.log(
+      `[CustomerMS] ✓ Found discount status for customer ${req.customer.id}:`,
+      status,
+    );
+    res.status(200).json(status);
+  } catch (err) {
+    console.error(
+      "[CustomerMS] ✗ Error fetching discount status:",
+      err.message,
+    );
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /customers/mark-discount-used — mark discount as used
+router.post("/mark-discount-used", requireAuth, async (req, res) => {
+  try {
+    await customerRepository.markDiscountUsed(req.customer.id);
+    res.status(200).json({ message: "Discount marked as used" });
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
@@ -93,6 +139,98 @@ router.get("/:id", requireAuth, async (req, res) => {
     const { passwordHash: _, ...safe } = customer;
     res.status(200).json(safe);
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+const THREE_MINUTES = 3 * 60 * 1000;
+
+// POST /internal/events — receives events from other microservices
+router.post("/internal/events", async (req, res) => {
+  const { type, data } = req.body;
+  console.log(`[CustomerMS] [Events] Received event: ${type}`, data);
+
+  // Acknowledge immediately
+  res.status(202).json({ received: true });
+
+  if (type === "booking-created") {
+    const {
+      customerId,
+      bookingId,
+      cabType,
+      startLocation,
+      endLocation,
+      passengers,
+      price,
+    } = data;
+
+    console.log(
+      `[CustomerMS] [CabReady] Scheduling notification in 3 minutes for booking:`,
+      bookingId,
+    );
+
+    setTimeout(async () => {
+      try {
+        await customerRepository.createNotification(
+          customerId,
+          `Your ${cabType} cab is on the way! Your driver has been assigned and is heading to your pickup location.`,
+          "cab_ready",
+        );
+        console.log(
+          `[CustomerMS] [CabReady] ✓ Notification created for booking:`,
+          bookingId,
+        );
+      } catch (err) {
+        console.error(
+          "[CustomerMS] [CabReady] ✗ Error creating notification:",
+          err.message,
+        );
+      }
+    }, THREE_MINUTES);
+  }
+});
+
+// POST /internal/check-discount — called by Booking MS after booking created
+router.post("/internal/check-discount", async (req, res) => {
+  try {
+    const { customerId, bookingCount } = req.body;
+    console.log(
+      "[CustomerMS] Checking discount for customer:",
+      customerId,
+      "bookings:",
+      bookingCount,
+    );
+
+    if (bookingCount < 3) {
+      return res.status(200).json({ discountIssued: false });
+    }
+
+    const status = await customerRepository.getDiscountStatus(customerId);
+
+    if (status.isDiscountNotificationSent) {
+      console.log(
+        "[CustomerMS] Discount already sent for customer:",
+        customerId,
+      );
+      return res.status(200).json({ discountIssued: false, alreadySent: true });
+    }
+
+    // Issue notification
+    await customerRepository.createNotification(
+      customerId,
+      "You have completed 3 bookings! You have earned a 30% discount on your next ride.",
+      "discount",
+    );
+
+    await customerRepository.markDiscountNotificationSent(customerId);
+
+    console.log(
+      "[CustomerMS] ✓ Discount notification issued for customer:",
+      customerId,
+    );
+    res.status(200).json({ discountIssued: true });
+  } catch (err) {
+    console.error("[CustomerMS] Error checking discount:", err.message);
     res.status(500).json({ error: err.message });
   }
 });

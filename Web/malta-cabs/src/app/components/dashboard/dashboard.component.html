@@ -21,7 +21,7 @@
         <p class="empty-icon">◈</p>
         <p class="empty-title">No bookings yet</p>
         <p class="empty-sub">Your rides will appear here once you book one</p>
-        <a routerLink="/booking" class="btn-gold">Book your first ride</a>
+        <a routerLink="/addBooking" class="btn-gold">Book your first ride</a>
       </div>
     }
 
@@ -44,7 +44,7 @@
             @for (booking of bookings; track booking.id; let i = $index) {
               <tr (click)="openBooking(booking.id)" class="booking-row">
                 <td class="col-num">{{ i + 1 }}</td>
-                <td class="col-date">{{ booking.dateTime | date: 'dd MMM yyyy, HH:mm' }}</td>
+                <td class="col-date">{{ booking.createdAt | date: 'dd MMM yyyy, HH:mm' }}</td>
                 <td class="col-cab">
                   <span class="cab-badge" [class]="'cab-' + booking.cabType?.toLowerCase()">
                     {{ booking.cabType }}
