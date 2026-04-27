@@ -3,6 +3,8 @@ const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
 
+//https://api-gateway-148505769651.europe-west1.run.app
+
 const app = express();
 app.use(cors());
 app.use(express.json());

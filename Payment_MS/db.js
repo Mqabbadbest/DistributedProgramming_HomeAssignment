@@ -1,26 +1,16 @@
 //db.js
 require("dotenv").config();
 const admin = require("firebase-admin");
-
-try {
-  if (!process.env.GOOGLE_PROJECT_ID) {
-    throw new Error("GOOGLE_PROJECT_ID environment variable is not set");
-  }
-  if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-    throw new Error(
-      "GOOGLE_APPLICATION_CREDENTIALS environment variable is not set",
-    );
-  }
-
+// 1. Check if the SDK is already initialized
+if (admin.apps.length === 0) {
   admin.initializeApp({
-    credential: admin.credential.applicationDefault(),
     projectId: process.env.GOOGLE_PROJECT_ID,
   });
-
-  console.log("✓ Firebase Admin SDK initialized successfully");
-} catch (error) {
-  console.error("✗ Failed to initialize Firebase Admin SDK:", error.message);
-  process.exit(1);
+  console.log("🔥 Firebase Admin initialized.");
+} else {
+  // 2. If it already exists, just use the existing instance
+  admin.app();
+  console.log("♻️  Reusing existing Firebase Admin instance.");
 }
 
 const db = admin.firestore();

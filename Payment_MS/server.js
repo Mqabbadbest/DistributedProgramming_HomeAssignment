@@ -2,6 +2,8 @@ require("dotenv").config();
 const express = require("express");
 const paymentRoutes = require("./src/routes/paymentRoutes");
 
+//https://payment-ms-148505769651.europe-west1.run.app
+
 const app = express();
 app.use(express.json());
 
