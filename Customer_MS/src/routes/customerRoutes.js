@@ -143,6 +143,53 @@ router.get("/:id", requireAuth, async (req, res) => {
   }
 });
 
+const THREE_MINUTES = 3 * 60 * 1000;
+
+// POST /internal/events — receives events from other microservices
+router.post("/internal/events", async (req, res) => {
+  const { type, data } = req.body;
+  console.log(`[CustomerMS] [Events] Received event: ${type}`, data);
+
+  // Acknowledge immediately
+  res.status(202).json({ received: true });
+
+  if (type === "booking-created") {
+    const {
+      customerId,
+      bookingId,
+      cabType,
+      startLocation,
+      endLocation,
+      passengers,
+      price,
+    } = data;
+
+    console.log(
+      `[CustomerMS] [CabReady] Scheduling notification in 3 minutes for booking:`,
+      bookingId,
+    );
+
+    setTimeout(async () => {
+      try {
+        await customerRepository.createNotification(
+          customerId,
+          `Your ${cabType} cab is on the way! Your driver has been assigned and is heading to your pickup location.`,
+          "cab_ready",
+        );
+        console.log(
+          `[CustomerMS] [CabReady] ✓ Notification created for booking:`,
+          bookingId,
+        );
+      } catch (err) {
+        console.error(
+          "[CustomerMS] [CabReady] ✗ Error creating notification:",
+          err.message,
+        );
+      }
+    }, THREE_MINUTES);
+  }
+});
+
 // POST /internal/check-discount — called by Booking MS after booking created
 router.post("/internal/check-discount", async (req, res) => {
   try {

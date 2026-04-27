@@ -194,6 +194,28 @@ router.post("/", requireAuth, async (req, res) => {
       }
 
       res.status(201).json(bookingWithPayment);
+
+      // After res.status(201).json(bookingWithPayment) — add this
+      try {
+        await axios.post(`${CUSTOMER_SERVICE_URL}/customers/internal/events`, {
+          type: "booking-created",
+          data: {
+            customerId: req.customerId,
+            bookingId: booking.id,
+            cabType,
+            startLocation,
+            endLocation,
+            passengers,
+            price,
+          },
+        });
+        console.log("[BookingMS] ✓ booking-created event sent to Customer MS");
+      } catch (err) {
+        console.error(
+          "[BookingMS] ✗ Failed to send booking-created event:",
+          err.message,
+        );
+      }
     } catch (paymentError) {
       console.error("[BookingMS] ✗ Payment MS call failed:", {
         message: paymentError.message,
