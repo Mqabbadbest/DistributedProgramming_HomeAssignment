@@ -4,13 +4,15 @@ const axios = require("axios");
 const paymentRepository = require("../repositories/firestoreRepository");
 const { calculatePrice } = require("../utils/paymentCalculator");
 const { isDeclined } = require("../utils/cardValidator");
-const { getFareDetails } = require("../utils/fareService");
 
 const CUSTOMER_SERVICE_URL =
   process.env.CUSTOMER_SERVICE_URL || "http://localhost:3000";
 
 const BOOKING_SERVICE_URL =
   process.env.BOOKING_SERVICE_URL || "http://localhost:3001";
+
+const FARE_ESTIMATION_SERVICE_URL =
+  process.env.FARE_ESTIMATION_SERVICE_URL || "http://localhost:3005";
 
 // ─── Auth Middleware ──────────────────────────────────────────────────────────
 const requireAuth = async (req, res, next) => {
@@ -60,9 +62,13 @@ router.post("/calculate", async (req, res) => {
       applyDiscount,
       currentDateTime,
     });
-    // Get fare details from RapidAPI
+    // Get fare details from Fare Estimation MS
+    const fareRes = await axios.post(
+      `${FARE_ESTIMATION_SERVICE_URL}/fares/calculate`,
+      { startLocation, endLocation },
+    );
     const { cabFare, cabFareCents, durationMinutes, distanceKilometers } =
-      await getFareDetails(startLocation, endLocation);
+      fareRes.data;
 
     let price = calculatePrice(cabFare, cabType, passengers, currentDateTime);
 

@@ -74,6 +74,30 @@
       }
     },
     {
+      "label": "Start Fare Estimation MS",
+      "type": "shell",
+      "command": "node server.js",
+      "options": {
+        "cwd": "${workspaceFolder}/Fare_Estimation_MS"
+      },
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "label": "Fare Estimation MS"
+      },
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "."
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "running on port"
+        }
+      }
+    },
+    {
       "label": "Start Payment MS",
       "type": "shell",
       "command": "node server.js",
@@ -150,6 +174,7 @@
       "dependsOn": [
         "Start Customer MS",
         "Start Booking MS",
+        "Start Fare Estimation MS",
         "Start Payment MS",
         "Start Location MS",
         "Start API Gateway",
