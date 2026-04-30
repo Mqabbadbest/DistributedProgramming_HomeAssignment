@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const customerRepository = require("../repositories/firestoreRepository");
 const db = require("../../db");
+const notificationEmitter = require("../events/notificationEmitter");
 
 // ─── Auth Middleware ──────────────────────────────────────────────────────────
 const requireAuth = async (req, res, next) => {
@@ -143,8 +144,6 @@ router.get("/:id", requireAuth, async (req, res) => {
   }
 });
 
-const THREE_MINUTES = 3 * 60 * 1000;
-
 // POST /internal/events — receives events from other microservices
 router.post("/internal/events", async (req, res) => {
   const { type, data } = req.body;
@@ -165,28 +164,20 @@ router.post("/internal/events", async (req, res) => {
     } = data;
 
     console.log(
-      `[CustomerMS] [CabReady] Scheduling notification in 3 minutes for booking:`,
+      `[CustomerMS] [Events] Emitting cab-assigned event for booking:`,
       bookingId,
     );
 
-    setTimeout(async () => {
-      try {
-        await customerRepository.createNotification(
-          customerId,
-          `Your ${cabType} cab is on the way! Your driver has been assigned and is heading to your pickup location.`,
-          "cab_ready",
-        );
-        console.log(
-          `[CustomerMS] [CabReady] ✓ Notification created for booking:`,
-          bookingId,
-        );
-      } catch (err) {
-        console.error(
-          "[CustomerMS] [CabReady] ✗ Error creating notification:",
-          err.message,
-        );
-      }
-    }, THREE_MINUTES);
+    // Emit event to listener — listener will handle 3-minute delay and notification creation
+    notificationEmitter.emit("cab-assigned", {
+      customerId,
+      bookingId,
+      cabType,
+      startLocation,
+      endLocation,
+      passengers,
+      price,
+    });
   }
 });
 
@@ -215,17 +206,17 @@ router.post("/internal/check-discount", async (req, res) => {
       return res.status(200).json({ discountIssued: false, alreadySent: true });
     }
 
-    // Issue notification
-    await customerRepository.createNotification(
-      customerId,
-      "You have completed 3 bookings! You have earned a 30% discount on your next ride.",
-      "discount",
-    );
-
+    // Mark discount as sent in DB (BEFORE emitting event)
     await customerRepository.markDiscountNotificationSent(customerId);
 
+    // Emit event — listener will create the notification
+    notificationEmitter.emit("discount-earned", {
+      customerId,
+      discountPercentage: 30,
+    });
+
     console.log(
-      "[CustomerMS] ✓ Discount notification issued for customer:",
+      "[CustomerMS] ✓ Discount event emitted for customer:",
       customerId,
     );
     res.status(200).json({ discountIssued: true });
