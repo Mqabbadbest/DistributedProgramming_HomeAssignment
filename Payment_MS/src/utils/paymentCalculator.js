@@ -25,6 +25,7 @@ const getDaytimeMultiplier = (dateTime) => {
 /**
  * Calculates the total price for a cab booking.
  * Formula: cabFare × cabMultiplier × passengersMultiplier × daytimeMultiplier
+ * Discount is handled separately in the route handler after this calculation.
  * @param {number} cabFare - The base fare from the external API in euros
  * @param {string} cabType - Economic | Premium | Executive
  * @param {number} passengers - Number of passengers

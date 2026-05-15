@@ -14,7 +14,14 @@ const BOOKING_SERVICE_URL =
 const FARE_ESTIMATION_SERVICE_URL =
   process.env.FARE_ESTIMATION_SERVICE_URL || "http://localhost:3005";
 
-// ─── Auth Middleware ──────────────────────────────────────────────────────────
+/**
+ * Middleware to require authentication for protected routes.
+ * Checks for x-session-token header and validates it with Customer Service.
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ * @returns
+ */
 const requireAuth = async (req, res, next) => {
   const token = req.headers["x-session-token"];
   if (!token) return res.status(401).json({ error: "Missing session token" });
@@ -31,7 +38,14 @@ const requireAuth = async (req, res, next) => {
   }
 };
 
-// POST /payments/calculate — calculate price only (no payment creation)
+/**
+ * POST /payments/calculate — calculates price for a potential booking (called by frontend before booking is created)
+ * Expects: { customerId, cabType, passengers, startLocation, endLocation, applyDiscount (boolean), currentDateTime }
+ * Returns: { price, cabFareCents, durationMinutes, distanceKilometers, discountApplied }
+ * This endpoint is utilised by the add-booking form in the frontend to show the user the price before they confirm the booking.
+ * It calls the Fare Estimation MS to get the base fare and then applies the multipliers based on cab type, passengers, and time of day.
+ * If the user has requested to apply a discount, it also checks with the Customer Service if the discount is available and applies it to the price if so.
+ */
 router.post("/calculate", async (req, res) => {
   try {
     const {
@@ -130,7 +144,13 @@ router.post("/calculate", async (req, res) => {
   }
 });
 
-// POST /payments/create — create actual payment record (called after booking is created)
+/**
+ * POST /payments/create — creates a payment record after booking is created but before user submits card details
+ * Expects: { customerId, bookingId, price }
+ * Returns: { paymentId, price, status }
+ * This endpoint is called by the Booking MS after a booking is created to set up the payment record.
+ * The user will then submit their card details in a separate step to complete the payment.
+ */
 router.post("/create", async (req, res) => {
   try {
     const { customerId, bookingId, price } = req.body;
@@ -168,7 +188,12 @@ router.post("/create", async (req, res) => {
   }
 });
 
-// POST /payments/:paymentId/pay — user submits card details
+/**
+ * POST /payments/:paymentId/pay — user submits card details
+ * Expects: { cardHolderName, cardNumber, cvv, cardExpiry }
+ * Returns: { paymentId, price, status, discountApplied }
+ * This endpoint is called by the frontend when the user submits their card details to complete the payment.
+ */
 router.post("/:paymentId/pay", requireAuth, async (req, res) => {
   try {
     const { cardHolderName, cardNumber, cvv, cardExpiry } = req.body;
@@ -266,7 +291,9 @@ router.post("/:paymentId/pay", requireAuth, async (req, res) => {
   }
 });
 
-// GET /payments/:paymentId — get payment details
+/**
+ * GET /payments/:paymentId — get payment details
+ */
 router.get("/:paymentId", requireAuth, async (req, res) => {
   try {
     const payment = await paymentRepository.findById(req.params.paymentId);
@@ -277,7 +304,9 @@ router.get("/:paymentId", requireAuth, async (req, res) => {
   }
 });
 
-// GET /payments — get all payments for logged in customer
+/**
+ * GET /payments — get all payments for a customer
+ */
 router.get("/", requireAuth, async (req, res) => {
   try {
     const payments = await paymentRepository.findByCustomer(req.customerId);

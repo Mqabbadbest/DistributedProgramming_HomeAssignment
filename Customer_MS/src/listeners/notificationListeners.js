@@ -3,7 +3,10 @@ const customerRepository = require("../repositories/firestoreRepository");
 
 const THREE_MINUTES = 3 * 60 * 1000;
 
-// Listen for cab-assigned events
+/**
+ * Listen for cab-assigned events and schedule a notification to be sent to the customer 3 minutes later, informing them that their cab is on the way.
+ * The notification should include the cab type and a message that the driver has been assigned and is heading to the pickup location.
+ */
 notificationEmitter.on("cab-assigned", async (data) => {
   try {
     const { customerId, bookingId, cabType } = data;
@@ -39,7 +42,10 @@ notificationEmitter.on("cab-assigned", async (data) => {
   }
 });
 
-// Listen for discount-earned events
+/**
+ * Listen for discount-earned events and create a notification for the customer.
+ * The notification should include the discount percentage and a message that they have earned a discount.
+ */
 notificationEmitter.on("discount-earned", async (data) => {
   try {
     const { customerId, discountPercentage } = data;

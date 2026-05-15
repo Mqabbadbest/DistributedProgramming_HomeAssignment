@@ -29,7 +29,6 @@ class PaymentRepository {
     if (payment.status === "completed")
       throw new Error("Payment already completed");
 
-    // Tokenize full card details — never stored in plain text
     const cardToken = tokenizeCard({ cardNumber, cvv, cardExpiry });
 
     // Only store cardholder name and masked number

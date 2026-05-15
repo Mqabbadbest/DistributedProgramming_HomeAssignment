@@ -94,7 +94,7 @@ export class AddBookingComponent implements OnInit, OnDestroy {
         this.discountAlreadyUsed = status.isDiscountUsed;
         console.log('[AddBooking] hasDiscount set to:', this.hasDiscount);
         console.log('[AddBooking] discountAlreadyUsed set to:', this.discountAlreadyUsed);
-        this.cdr.detectChanges(); // ensure UI updates with new discount status
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('[AddBooking] Failed to get discount status:', err);

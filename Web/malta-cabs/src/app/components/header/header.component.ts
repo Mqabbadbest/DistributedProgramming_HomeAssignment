@@ -32,15 +32,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
     // Listen for storage changes to update auth status
     this.loadNotifications();
     window.addEventListener('storage', () => this.checkAuthentication());
-
-    // Start polling for new notifications every 2 mins
-    // this.notificationPolling = interval(120000).subscribe(() => {
-    //   this.loadNotifications();
-    // });
   }
 
   ngOnDestroy(): void {
-    // Clean up polling subscription
     if (this.notificationPolling) {
       this.notificationPolling.unsubscribe();
     }

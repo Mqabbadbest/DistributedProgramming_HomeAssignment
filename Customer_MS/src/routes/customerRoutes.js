@@ -4,7 +4,15 @@ const customerRepository = require("../repositories/firestoreRepository");
 const db = require("../../db");
 const notificationEmitter = require("../events/notificationEmitter");
 
-// ─── Auth Middleware ──────────────────────────────────────────────────────────
+/**
+ * Middleware to require authentication for routes that need it. Checks for x-session-token header, validates it against the sessions collection in Firestore, and attaches the customer data to the request object if valid.
+ * If the token is missing or invalid, responds with 401 Unauthorized.
+ * This middleware is used for routes that require the user to be logged in, such as fetching notifications or discount status.
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ * @returns
+ */
 const requireAuth = async (req, res, next) => {
   const token = req.headers["x-session-token"];
   if (!token) return res.status(401).json({ error: "Missing session token" });
@@ -17,7 +25,11 @@ const requireAuth = async (req, res, next) => {
   next();
 };
 
-//customerRoutes
+/**
+ * POST /customers/register — register a new customer, no authentication required
+ * Body: { firstName, lastName, email, phone, password }
+ * Response: 201 Created with customer data (excluding password), or 400 Bad Request if missing/invalid fields, or 409 Conflict if email already registered, or 500 Internal Server Error on failure
+ */
 router.post("/register", async (req, res) => {
   try {
     const { firstName, lastName, email, phone, password } = req.body;
@@ -50,7 +62,11 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// POST /customers/login
+/**
+ * POST /customers/login — log in an existing customer
+ * Body: { email, password }
+ * Response: 200 OK with customer ID and session token, or 400 Bad Request if missing/invalid fields, or 401 Unauthorized if credentials are invalid, or 500 Internal Server Error on failure
+ */
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -70,6 +86,12 @@ router.post("/login", async (req, res) => {
   }
 });
 
+/**
+ * GET /customers/me — get the authenticated customer's profile information
+ * Headers: x-session-token
+ * Response: 200 OK with customer data (excluding password), or 401 Unauthorized if token is missing/invalid, or 500 Internal Server Error on failure
+ * This method is used by other microservices to validate session tokens and get customer info, so it should be efficient and secure.
+ */
 router.get("/me", async (req, res) => {
   try {
     const token = req.headers["x-session-token"];
@@ -85,7 +107,11 @@ router.get("/me", async (req, res) => {
   }
 });
 
-// GET /customers/notifications — get notifications for logged in customer
+/**
+ * GET /customers/notifications — get notifications for logged in customer
+ * Headers: x-session-token
+ * Response: 200 OK with notifications, or 401 Unauthorized if token is missing/invalid, or 500 Internal Server Error on failure
+ */
 router.get("/notifications", requireAuth, async (req, res) => {
   try {
     console.log(
@@ -103,7 +129,11 @@ router.get("/notifications", requireAuth, async (req, res) => {
   }
 });
 
-// GET /customers/discount-status — get discount status for logged in customer
+/**
+ * GET /customers/discount-status — get discount status for logged in customer
+ * Headers: x-session-token
+ * Response: 200 OK with discount status, or 401 Unauthorized if token is missing/invalid, or 500 Internal Server Error on failure
+ */
 router.get("/discount-status", requireAuth, async (req, res) => {
   try {
     const status = await customerRepository.getDiscountStatus(req.customer.id);
@@ -121,7 +151,11 @@ router.get("/discount-status", requireAuth, async (req, res) => {
   }
 });
 
-// POST /customers/mark-discount-used — mark discount as used
+/**
+ * POST /customers/mark-discount-used — mark discount as used
+ * Headers: x-session-token
+ * Response: 200 OK if discount is marked as used, or 401 Unauthorized if token is missing/invalid, or 500 Internal Server Error on failure
+ */
 router.post("/mark-discount-used", requireAuth, async (req, res) => {
   try {
     await customerRepository.markDiscountUsed(req.customer.id);
@@ -131,7 +165,9 @@ router.post("/mark-discount-used", requireAuth, async (req, res) => {
   }
 });
 
-// GET /customers/:id
+/**
+ * GET /customers/:id — get customer profile by ID
+ */
 router.get("/:id", requireAuth, async (req, res) => {
   try {
     const customer = await customerRepository.findById(req.params.id);
@@ -144,7 +180,11 @@ router.get("/:id", requireAuth, async (req, res) => {
   }
 });
 
-// POST /internal/events — receives events from other microservices
+/**
+ * POST /internal/events — receives events from other microservices
+ * Headers: x-session-token
+ * Response: 202 Accepted if event is received, or 500 Internal Server Error on failure
+ */
 router.post("/internal/events", async (req, res) => {
   const { type, data } = req.body;
   console.log(`[CustomerMS] [Events] Received event: ${type}`, data);
@@ -181,7 +221,12 @@ router.post("/internal/events", async (req, res) => {
   }
 });
 
-// POST /internal/check-discount — called by Booking MS after booking created
+/**
+ * POST /customers/internal/check-discount — check if customer is eligible for discount based on booking count, and if so, mark discount as sent and emit event to create notification
+ * Body: { customerId, bookingCount }
+ * Response: 200 OK with { discountIssued: true/false, alreadySent: true/false }, or 500 Internal Server Error on failure
+ * Note: This endpoint is called by the Booking MS after a booking is completed, to check if the customer has earned a discount. If they have completed 3 bookings and haven't already received the discount notification, it will mark the discount as sent in the database and emit an event that triggers the creation of the notification.
+ */
 router.post("/internal/check-discount", async (req, res) => {
   try {
     const { customerId, bookingCount } = req.body;
@@ -203,10 +248,9 @@ router.post("/internal/check-discount", async (req, res) => {
         "[CustomerMS] Discount already sent for customer:",
         customerId,
       );
-      return res.status(200).json({ discountIssued: false, alreadySent: true });
+      return res.status(200).json({ alreadySent: true });
     }
 
-    // Mark discount as sent in DB (BEFORE emitting event)
     await customerRepository.markDiscountNotificationSent(customerId);
 
     // Emit event — listener will create the notification

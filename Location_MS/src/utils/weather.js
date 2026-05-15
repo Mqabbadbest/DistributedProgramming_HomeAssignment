@@ -1,5 +1,13 @@
 const { fetchWeatherApi } = require("openmeteo");
 
+/**
+ * Retrieves weather data for a given latitude and longitude using the Open-Meteo API.
+ * The user can search the forecast for the next days of their favorite locations and check the weather conditions.
+ *
+ * @param {*} lat
+ * @param {*} lng
+ * @returns
+ */
 const getWeatherForLocation = async (lat, lng) => {
   const params = {
     latitude: lat,

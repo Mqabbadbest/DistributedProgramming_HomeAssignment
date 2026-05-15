@@ -5,7 +5,7 @@ const IV_LENGTH = 16;
 
 const tokenizeCard = (cardData) => {
   const iv = crypto.randomBytes(IV_LENGTH);
-  const cipher = crypto.createCipheriv("aes-256-cbc", ENCRYPTION_KEY, iv); // use directly, no Buffer.from
+  const cipher = crypto.createCipheriv("aes-256-cbc", ENCRYPTION_KEY, iv);
   const encrypted = Buffer.concat([
     cipher.update(JSON.stringify(cardData)),
     cipher.final(),
@@ -17,7 +17,7 @@ const detokenizeCard = (token) => {
   const [ivHex, encryptedHex] = token.split(":");
   const iv = Buffer.from(ivHex, "hex");
   const encrypted = Buffer.from(encryptedHex, "hex");
-  const decipher = crypto.createDecipheriv("aes-256-cbc", ENCRYPTION_KEY, iv); // use directly
+  const decipher = crypto.createDecipheriv("aes-256-cbc", ENCRYPTION_KEY, iv);
   const decrypted = Buffer.concat([
     decipher.update(encrypted),
     decipher.final(),

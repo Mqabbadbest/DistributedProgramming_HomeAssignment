@@ -275,6 +275,7 @@ app.get("/payments", async (req, res) => {
   }
 });
 
+// ─── Locations ───────────────────────────────────────────────────────────
 app.post("/locations", async (req, res) => {
   try {
     const response = await axios.post(

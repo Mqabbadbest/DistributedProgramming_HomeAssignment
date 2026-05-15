@@ -22,7 +22,6 @@ export class DashboardComponent implements OnInit {
     private router: Router,
     private bookingService: BookingService,
     private paymentService: PaymentService,
-    private authService: AuthService,
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -43,14 +42,12 @@ export class DashboardComponent implements OnInit {
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
         );
 
-        // Load payment status for each booking that has a paymentId
         const paymentPromises = this.bookings
           .filter((b) => b.paymentId)
-          .map(
-            (b) =>
-              firstValueFrom(this.paymentService.getById(b.paymentId))
-                .then((payment) => this.payments.set(b.paymentId, payment))
-                .catch(() => {}), // silently skip if payment fetch fails
+          .map((b) =>
+            firstValueFrom(this.paymentService.getById(b.paymentId))
+              .then((payment) => this.payments.set(b.paymentId, payment))
+              .catch(() => {}),
           );
 
         await Promise.all(paymentPromises);

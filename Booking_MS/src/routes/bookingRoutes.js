@@ -8,7 +8,14 @@ const CUSTOMER_SERVICE_URL =
 const PAYMENT_SERVICE_URL =
   process.env.PAYMENT_SERVICE_URL || "http://localhost:3002";
 
-// ─── Auth Middleware ──────────────────────────────────────────────────────────
+/**
+ * Middleware to require authentication for protected routes.
+ * Checks for x-session-token header and validates it with Customer Service.
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ * @returns
+ */
 const requireAuth = async (req, res, next) => {
   const token = req.headers["x-session-token"];
   if (!token) {
@@ -30,10 +37,21 @@ const requireAuth = async (req, res, next) => {
   }
 };
 
+/**
+ * Helper function to validate location objects
+ * @param {*} loc
+ * @returns
+ */
 const isValidLocation = (loc) =>
   loc && typeof loc.lat === "number" && typeof loc.lng === "number";
 
-// POST /bookings — create a booking
+/**
+ * POST /bookings — create a new booking
+ * Body: { startLocation: { lat, lng }, endLocation: { lat, lng }, passengers, cabType, price, cabFareCents, durationMinutes, distanceKilometers, applyDiscount }
+ * Response: 201 Created with booking data, or 400 Bad Request if missing/invalid fields, or 500 Internal Server Error on failure
+ * After creating booking, also creates payment in Payment MS and checks for discount eligibility in Customer MS
+ * Finally, sends a "booking-created" event to Customer MS for notification purposes
+ */
 router.post("/", requireAuth, async (req, res) => {
   console.log("[BookingMS] POST /bookings called");
   console.log(
@@ -190,12 +208,10 @@ router.post("/", requireAuth, async (req, res) => {
           "[BookingMS] ✗ Discount check failed:",
           discountErr.message,
         );
-        // Non-fatal — don't fail the booking
       }
 
       res.status(201).json(bookingWithPayment);
 
-      // After res.status(201).json(bookingWithPayment) — add this
       try {
         await axios.post(`${CUSTOMER_SERVICE_URL}/customers/internal/events`, {
           type: "booking-created",
@@ -238,7 +254,12 @@ router.post("/", requireAuth, async (req, res) => {
   }
 });
 
-// GET /bookings/current — get upcoming bookings
+/**
+ * GET /bookings/current — get current active bookings for authenticated customer
+ * Response: 200 OK with array of bookings, or 500 Internal Server Error on failure
+ * Note: This endpoint is protected and requires a valid x-session-token header
+ * to identify the customer. It returns only bookings that are currently active.
+ */
 router.get("/current", requireAuth, async (req, res) => {
   console.log(
     "[BookingMS] GET /bookings/current for customer:",
@@ -257,7 +278,12 @@ router.get("/current", requireAuth, async (req, res) => {
   }
 });
 
-// GET /bookings/past — get completed bookings
+/**
+ * GET /bookings/past — get past bookings for authenticated customer
+ * Response: 200 OK with array of past bookings, or 500 Internal Server Error on failure
+ * Note: This endpoint is protected and requires a valid x-session-token header
+ * to identify the customer. It returns only bookings that are completed or cancelled.
+ */
 router.get("/past", requireAuth, async (req, res) => {
   console.log("[BookingMS] GET /bookings/past for customer:", req.customerId);
   try {
@@ -270,8 +296,12 @@ router.get("/past", requireAuth, async (req, res) => {
   }
 });
 
-// GET /internal/bookings/:id — internal endpoint for other microservices (no auth required)
-// Must come BEFORE wildcard /:id route so it matches correctly
+/**
+ * GET /bookings/internal/:id — get booking by id (internal use only, no auth)
+ * Response: 200 OK with booking data, or 404 Not Found if booking doesn't exist, or 500 Internal Server Error on failure
+ * Note: This endpoint is for internal use by other services (e.g. Payment MS) and does not require authentication.
+ * It should return the booking regardless of its status or customerId.
+ */
 router.get("/internal/:id", async (req, res) => {
   console.log("[BookingMS] GET /internal/bookings/:id →", req.params.id);
   try {
@@ -292,7 +322,12 @@ router.get("/internal/:id", async (req, res) => {
   }
 });
 
-// GET /bookings/:id — get booking by id
+/**
+ * GET /bookings/:id — get booking by id
+ * Response: 200 OK with booking data, or 404 Not Found if booking doesn't exist, or 500 Internal Server Error on failure
+ * Note: This endpoint is protected and requires a valid x-session-token header
+ * to identify the customer. It returns the booking only if it belongs to the authenticated customer.
+ */
 router.get("/:id", requireAuth, async (req, res) => {
   console.log("[BookingMS] GET /bookings/:id →", req.params.id);
   try {

@@ -2,7 +2,10 @@ const express = require("express");
 const router = express.Router();
 const { getFareDetails } = require("../utils/fareService");
 
-// POST /fares/calculate — calculate fare for a route
+/**
+ * POST /calculate — calculate fare details based on start and end locations
+ * This endpoint is used by the Payment MS to get the base fare for a trip, which is then used in the price calculation.
+ */
 router.post("/calculate", async (req, res) => {
   try {
     const { startLocation, endLocation } = req.body;

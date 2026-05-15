@@ -7,7 +7,6 @@ const { getWeatherForLocation } = require("../utils/weather");
 const CUSTOMER_SERVICE_URL =
   process.env.CUSTOMER_SERVICE_URL || "http://localhost:3000";
 
-// ─── Auth Middleware ──────────────────────────────────────────────────────────
 const requireAuth = async (req, res, next) => {
   const token = req.headers["x-session-token"];
   if (!token) return res.status(401).json({ error: "Missing session token" });
@@ -24,6 +23,11 @@ const requireAuth = async (req, res, next) => {
   }
 };
 
+/**
+ * POST /locations — create a new location for the authenticated customer
+ * Body: { name, lat, lng }
+ * Response: 201 Created with location data, or 400 Bad Request if missing/invalid fields, or 500 Internal Server Error on failure
+ */
 router.post("/", requireAuth, async (req, res) => {
   console.log("[LocationMS] POST /locations called");
   try {
@@ -50,6 +54,10 @@ router.post("/", requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * GET /locations — fetch all locations for the authenticated customer
+ * Response: 200 OK with a list of locations, or 500 Internal Server Error on failure
+ */
 router.get("/", requireAuth, async (req, res) => {
   console.log("[LocationMS] GET /locations for customer:", req.customerId);
   try {
@@ -64,6 +72,12 @@ router.get("/", requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * PUT /locations/:id — update an existing location for the authenticated customer
+ * Path Parameters: { id }
+ * Body: { name, lat, lng }
+ * Response: 200 OK with updated location data, or 400 Bad Request if missing/invalid fields, or 500 Internal Server Error on failure
+ */
 router.put("/:id", requireAuth, async (req, res) => {
   console.log("[LocationMS] PUT /locations/:id →", req.params.id);
   try {
@@ -99,6 +113,12 @@ router.put("/:id", requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * DELETE /locations/:id — delete a location for the authenticated customer
+ * Path Parameters: { id }
+ * Response: 200 OK with success message, or 404 Not Found if location doesn't exist, or 403 Forbidden if unauthorized, or 500 Internal Server Error on failure
+ * Note: The service should ensure that only the owner of the location can delete it.
+ */
 router.delete("/:id", requireAuth, async (req, res) => {
   console.log("[LocationMS] DELETE /locations/:id →", req.params.id);
   try {
@@ -119,6 +139,11 @@ router.delete("/:id", requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * GET /locations/:id/weather — fetch weather data for a specific location
+ * Path Parameters: { id }
+ * Response: 200 OK with location and weather data, or 404 Not Found if location doesn't exist, or 403 Forbidden if unauthorized, or 500 Internal Server Error on failure
+ */
 router.get("/:id/weather", requireAuth, async (req, res) => {
   console.log("[LocationMS] GET /locations/:id/weather →", req.params.id);
   try {
