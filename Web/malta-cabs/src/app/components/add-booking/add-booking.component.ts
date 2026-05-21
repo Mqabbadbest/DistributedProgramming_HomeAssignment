@@ -76,12 +76,10 @@ export class AddBookingComponent implements OnInit, OnDestroy {
       cabType: ['', Validators.required],
     });
 
-    // Set up price recalculation with debouncing - ONLY for passengers, cabType
     this.priceCalculationSubscription = this.priceCalculationSubject
       .pipe(debounceTime(500))
       .subscribe(() => this.calculatePrice());
 
-    // Trigger price calculation only when passengers or cabType change (NOT on search input)
     this.bookingForm.valueChanges.subscribe((values) => {
       console.log('[AddBooking] Form values changed (passengers/cabType):', values);
       this.priceCalculationSubject.next();
@@ -173,7 +171,7 @@ export class AddBookingComponent implements OnInit, OnDestroy {
     if (this.bookingForm.invalid || !this.originSelected || !this.destinationSelected) {
       this.calculatedPrice = null;
       this.tripDetails = null;
-      this.cdr.detectChanges(); // force update even on reset
+      this.cdr.detectChanges();
       return;
     }
 

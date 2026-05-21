@@ -3,7 +3,6 @@ require("dotenv").config();
 const express = require("express");
 const customerRoutes = require("./src/routes/customerRoutes");
 
-// Initialize notification listeners
 require("./src/listeners/notificationListeners");
 
 const app = express();

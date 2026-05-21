@@ -12,7 +12,7 @@ const getFareDetails = async (startLocation, endLocation) => {
       },
       headers: {
         "x-rapidapi-host": "taxi-fare-calculator.p.rapidapi.com",
-        "x-rapidapi-key": process.env.RAPIDAPI_KEY2,
+        "x-rapidapi-key": process.env.RAPIDAPI_KEY3,
       },
     },
   );
